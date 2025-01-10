@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Form</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-     {% load static %}
+    {% load static %}
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -70,6 +70,11 @@
             color: #d81b60; /* Pink label color on focus */
         }
 
+        /* Add this to ensure the label doesn't stay pink after typing */
+        .input-field input:valid + label {
+            color: #f8bbd0; /* Light pink when text is valid */
+        }
+
         .btn-submit {
             width: 100%;
             padding: 14px;
@@ -102,32 +107,39 @@
 </head>
 <body>
 
-    <div class="form-container">
-        <h2>Sign Up</h2>
-        <form method="POST">
-            {% csrf_token %}
-            <div class="input-field">
-                <input type="text" id="name" required placeholder=" " autocomplete="off">
-                <label for="name">Full Name</label>
-            </div>
-            <div class="input-field">
-                <input type="email" id="email" required placeholder=" " autocomplete="off">
-                <label for="email">Email Address</label>
-            </div>
-            <div class="input-field">
-                <input type="password" id="password" required placeholder=" ">
-                <label for="password">Password</label>
-            </div>
-            <div class="input-field">
-                <input type="password" id="confirm-password" required placeholder=" " autocomplete="new-password">
-                <label for="confirm-password">Confirm Password</label>
-            </div>
-            <button type="submit" class="btn-submit">Sign Up</button>
-        </form>
-        <div class="text-center">
-            <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+<div class="form-container">
+    <h2>Sign Up</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Full Name Field -->
+        <div class="input-field">
+            <label for="username">Full Name</label>
+            {{ form.username }} <!-- Rendered form field -->
         </div>
+
+        <!-- Password Field -->
+        <div class="input-field">
+            <label for="password1">Password</label>
+            {{ form.password1 }} <!-- Rendered form field -->
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="input-field">
+            <label for="password2">Confirm Password</label>
+            {{ form.password2 }} <!-- Rendered form field -->
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit">Sign Up</button>
+    </form>
+
+    <!-- Login Link for Users with Existing Accounts -->
+    <div class="text-center">
+        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
     </div>
+</div>
+
 
 </body>
 </html>

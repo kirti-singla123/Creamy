@@ -27,12 +27,17 @@ def login_view(request):
 # View for Sign Up
 def signup_view(request):
     if request.method == 'POST':
+        print("POST data:", request.POST)
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('login')  # Redirect to login page after successful sign-up
+        else:
+            print("Form is not valid")
+            print(form.errors)  # This will print out any form errors
+            return render(request, 'signup.html', {'form': form, 'error': form.errors})
     else:
-        form = UserCreationForm()
+         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
 def logout_view(request):
