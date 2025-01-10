@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+     {% load static %}
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url("{% static 'img/login2.jpg' %}") no-repeat center center fixed; /* Using static image */
+            background-size: cover; /* Make sure the image covers the entire body */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.8); /* Slight transparency for form */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            box-sizing: border-box;
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #d81b60; /* Dark pink color */
+        }
+
+        .input-field {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #f8bbd0; /* Light pink border */
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .input-field input:focus {
+            border-color: #d81b60; /* Pink border on focus */
+            box-shadow: 0 0 5px rgba(216, 27, 96, 0.5); /* Pink shadow on focus */
+        }
+
+        .input-field label {
+            position: absolute;
+            left: 16px;
+            top: 12px;
+            font-size: 16px;
+            color: #f8bbd0; /* Light pink color */
+            transition: all 0.3s ease;
+        }
+
+        .input-field input:focus + label,
+        .input-field input:not(:placeholder-shown) + label {
+            top: -8px;
+            left: 16px;
+            font-size: 12px;
+            color: #d81b60; /* Pink label color on focus */
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #d81b60; /* Pink button */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #c2185b; /* Darker pink on hover */
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-center a {
+            color: #d81b60; /* Pink link */
+            text-decoration: none;
+        }
+
+        .text-center a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Sign Up</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-field">
+                <input type="text" id="name" required placeholder=" " autocomplete="off">
+                <label for="name">Full Name</label>
+            </div>
+            <div class="input-field">
+                <input type="email" id="email" required placeholder=" " autocomplete="off">
+                <label for="email">Email Address</label>
+            </div>
+            <div class="input-field">
+                <input type="password" id="password" required placeholder=" ">
+                <label for="password">Password</label>
+            </div>
+            <div class="input-field">
+                <input type="password" id="confirm-password" required placeholder=" " autocomplete="new-password">
+                <label for="confirm-password">Confirm Password</label>
+            </div>
+            <button type="submit" class="btn-submit">Sign Up</button>
+        </form>
+        <div class="text-center">
+            <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
