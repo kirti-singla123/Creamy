@@ -10,23 +10,23 @@
     <meta content="Free HTML Templates" name="description">
 
     <!-- Favicon -->
-    <link href="/static/img/favicon.ico" rel="icon">
+    <link href="{% static 'img/favicon.ico' %}" rel="icon">
 
     <!-- Google Web Fonts -->
-    <link href="/static/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-
-    <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Libraries Stylesheet -->
-    <link href="/static/lib/lightbox/css/lightbox.min.css" rel="stylesheet">
+    <!-- Owl Carousel CSS -->
+    <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+    <link href="{% static 'lib/owlcarousel/assets/owl.theme.default.min.css' %}" rel="stylesheet">
+
+    <!-- Lightbox CSS -->
+    <link href="{% static 'lib/lightbox/css/lightbox.min.css' %}" rel="stylesheet">
 
     <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
-
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 
 <body>
@@ -60,21 +60,20 @@
                         <a class="text-white pl-3" href="">
                             <i class="fab fa-youtube"></i>
                         </a>
-                        <div class="pl-4" >
+                        <div class="pl-4">
                             {% if user.is_authenticated %}
                             <p class="text-white">Welcome, {{ user.username }}! <a class="text-white pl-3" href="{% url 'logout' %}">Logout</a></p>
                             {% else %}
                             <a class="text-white pl-3" href="{% url 'login' %}">Login</a>
                             <a class="text-white pl-3" href="{% url 'signup' %}">Sign Up</a>
                             {% endif %}
-                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- Topbar End -->
-
 
     <!-- Navbar Start -->
     <div class="container-fluid position-relative nav-bar p-0">
@@ -100,10 +99,9 @@
                         <a href="{% url 'gallery' %}" class="nav-item nav-link">Gallery</a>
                         <a href="{% url 'contact' %}" class="nav-item nav-link">Contact</a>
                         <a href="{% url 'cart' %}" class="nav-item nav-link">
-                              <i class="fas fa-shopping-cart"></i> Cart
-                             <span class="badge badge-pill badge-danger">{{ cart_item_count }}</span>
-                            </a>
-
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            <span class="badge badge-pill badge-danger">{{ cart_item_count }}</span>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -116,7 +114,7 @@
     {% endblock %}
 
 <!-- Team Start -->
-<div class="container-fluid py-5">
+<div class="container-fluid py-0 m-0">
     <div class="container py-5">
         <div class="row">
             <div class="col-lg-6">
@@ -125,70 +123,70 @@
         </div>
         <div class="row">
             <div class="col">
-                <div class="owl-carousel team-carousel">
-                     <!-- Team Item 1 -->
-                     <div class="team-item">
-                         <div class="team-img mx-auto">
-                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-1.jpg' %}" style="object-fit: cover;">
-                         </div>
-                         <div class="position-relative text-center bg-light rounded px-4 py-5">
-                             <h3 class="font-weight-bold mt-5 mb-3 pt-5">Gordon Ramsay</h3>
-                             <h6 class="text-uppercase text-muted mb-4">Ice Cream Master</h6>
-                             <div class="d-flex justify-content-center pt-1">
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
-                             </div>
-                         </div>
-                     </div>
+                <div class="owl-carousel team-carousel owl-theme">
+                    <!-- Team Item 1 -->
+                    <div class="team-item">
+                        <div class="team-img mx-auto">
+                            <img class="rounded-circle w-100 h-100" src="{% static 'img/team-1.jpg' %}" style="object-fit: cover;">
+                        </div>
+                        <div class="position-relative text-center bg-light rounded px-4 py-5">
+                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Gordon Ramsay</h3>
+                            <h6 class="text-uppercase text-muted mb-4">Ice Cream Master</h6>
+                            <div class="d-flex justify-content-center pt-1">
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
 
-                     <!-- Team Item 2 -->
-                     <div class="team-item">
-                         <div class="team-img mx-auto">
-                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-2.jpg' %}" style="object-fit: cover;">
-                         </div>
-                         <div class="position-relative text-center bg-light rounded px-4 py-5">
-                             <h3 class="font-weight-bold mt-5 mb-3 pt-5">Rachel Ray</h3>
-                             <h6 class="text-uppercase text-muted mb-4">Head Ice Cream Creator</h6>
-                             <div class="d-flex justify-content-center pt-1">
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
-                             </div>
-                         </div>
-                     </div>
+                    <!-- Team Item 2 -->
+                    <div class="team-item">
+                        <div class="team-img mx-auto">
+                            <img class="rounded-circle w-100 h-100" src="{% static 'img/team-2.jpg' %}" style="object-fit: cover;">
+                        </div>
+                        <div class="position-relative text-center bg-light rounded px-4 py-5">
+                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Rachel Ray</h3>
+                            <h6 class="text-uppercase text-muted mb-4">Head Ice Cream Creator</h6>
+                            <div class="d-flex justify-content-center pt-1">
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
 
-                     <!-- Team Item 3 -->
-                     <div class="team-item">
-                         <div class="team-img mx-auto">
-                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-3.jpg' %}" style="object-fit: cover;">
-                         </div>
-                         <div class="position-relative text-center bg-light rounded px-4 py-5">
-                             <h3 class="font-weight-bold mt-5 mb-3 pt-5">Bobby Flay</h3>
-                             <h6 class="text-uppercase text-muted mb-4">Gelato Chef</h6>
-                             <div class="d-flex justify-content-center pt-1">
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
-                             </div>
-                         </div>
-                     </div>
+                    <!-- Team Item 3 -->
+                    <div class="team-item">
+                        <div class="team-img mx-auto">
+                            <img class="rounded-circle w-100 h-100" src="{% static 'img/team-3.jpg' %}" style="object-fit: cover;">
+                        </div>
+                        <div class="position-relative text-center bg-light rounded px-4 py-5">
+                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Bobby Flay</h3>
+                            <h6 class="text-uppercase text-muted mb-4">Gelato Chef</h6>
+                            <div class="d-flex justify-content-center pt-1">
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
 
-                     <!-- Team Item 4 -->
-                     <div class="team-item">
-                         <div class="team-img mx-auto">
-                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-4.jpg' %}" style="object-fit: cover;">
-                         </div>
-                         <div class="position-relative text-center bg-light rounded px-4 py-5">
-                             <h3 class="font-weight-bold mt-5 mb-3 pt-5">Tom Colicchio</h3>
-                             <h6 class="text-uppercase text-muted mb-4">Dessert Innovation Chef</h6>
-                             <div class="d-flex justify-content-center pt-1">
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
-                             </div>
-                         </div>
-                     </div>
+                    <!-- Team Item 4 -->
+                    <div class="team-item">
+                        <div class="team-img mx-auto">
+                            <img class="rounded-circle w-100 h-100" src="{% static 'img/team-4.jpg' %}" style="object-fit: cover;">
+                        </div>
+                        <div class="position-relative text-center bg-light rounded px-4 py-5">
+                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Tom Colicchio</h3>
+                            <h6 class="text-uppercase text-muted mb-4">Dessert Innovation Chef</h6>
+                            <div class="d-flex justify-content-center pt-1">
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -196,9 +194,8 @@
 </div>
 <!-- Team End -->
 
-
     <!-- Testimonial Start -->
-    <div class="container-fluid py-5">
+    <div class="container-fluid py-0 m-0">
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-lg-6">
@@ -236,9 +233,8 @@
     </div>
     <!-- Testimonial End -->
 
-
     <!-- Footer Start -->
-    <div class="container-fluid footer bg-light py-5" style="margin-top: 90px;">
+    <div class="container-fluid footer bg-light py-5 m-0" style="margin-top: 90px;">
         <div class="container text-center py-5">
             <div class="row">
                 <div class="col-12 mb-4">
@@ -275,28 +271,47 @@
     </div>
     <!-- Footer End -->
 
-
     <!-- Back to Top -->
     <a href="#" class="btn btn-secondary px-2 back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/lib/easing/easing.min.js"></script>
-    <script src="/static/lib/waypoints/waypoints.min.js"></script>
-    <script src="/static/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="/static/lib/isotope/isotope.pkgd.min.js"></script>
-    <script src="/static/lib/lightbox/js/lightbox.min.js"></script>
+    <script src="{% static 'lib/easing/easing.min.js' %}"></script>
+    <script src="{% static 'lib/waypoints/waypoints.min.js' %}"></script>
+    <script src="{% static 'lib/owlcarousel/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'lib/isotope/isotope.pkgd.min.js' %}"></script>
+    <script src="{% static 'lib/lightbox/js/lightbox.min.js' %}"></script>
 
     <!-- Contact Javascript File -->
-    <script src="/static/mail/jqBootstrapValidation.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'mail/jqBootstrapValidation.min.js' %}"></script>
     <script src="{% static 'mail/contact.js' %}"></script>
 
+    <!-- Custom JS -->
+    <script>
+        // Owl Carousel Initialization
+        // Owl Carousel Initialization
+        $(document).ready(function(){
+        $(".owl-carousel").owlCarousel({
+        items: 3,                // Number of items to show
+        autoplay: true,          // Enable autoplay
+        loop: true,              // Loop the carousel
+        nav: false,              // Remove prev/next navigation buttons
+        dots: true               // Keep dots for navigation
+        });
+        });
 
-    <!-- Template Javascript -->
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
-
-
+          $(".testimonial-carousel").owlCarousel({
+        items: 1,  // Display 1 item at a time
+        loop: true,  // Enable looping
+        margin: 30,  // Margin between items
+        nav: false,  // Disable navigation buttons (prev/next)
+        dots: true,  // Enable dots navigation (optional)
+        autoplay: true,  // Enable autoplay
+        autoplayTimeout: 3000,  // Timeout between slides (3 seconds)
+        autoplayHoverPause: true  // Pause on hover
+    });
+    </script>
 
 </body>
 

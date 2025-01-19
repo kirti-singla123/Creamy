@@ -51,13 +51,62 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
+
 def product_list(request):
     products = Product.objects.all()
     return render(request, 'product.html',{'products': products})
 
-def cart(request, id):
-    product = get_object_or_404(Product, id=id)  # Get the product by its ID
-    return render(request, 'cart.html', {'product': product})
+
+# Add to Cart view
+def add_to_cart(request, product_id):
+    # Check if cart exists in session
+    cart = request.session.get('cart', {})
+
+    # Get the product by ID
+    product = Product.objects.get(id=product_id)
+
+    # Convert price to float before storing in session
+    price = float(product.price)
+
+    # If the product is already in the cart, increment the quantity
+    if str(product.id) in cart:
+        cart[str(product.id)]['quantity'] += 1
+    else:
+        cart[str(product.id)] = {
+            'name': product.name,
+            'price': price,  # Store price as float
+            'quantity': 1,
+            'image': product.image.name,
+        }
+
+    # Save the cart back into session
+    request.session['cart'] = cart
+
+    # Redirect to the cart page
+    return redirect('cart')
+
+
+# Your cart view
+def cart(request):
+    # Retrieve the cart from the session
+    cart = request.session.get('cart', {})
+
+    # Calculate the total price
+    total_price = 0
+    for item in cart.values():
+        total_price += item['price'] * item['quantity']  # Multiply price by quantity for each item
+
+    # Pass cart and total price to the template
+    return render(request, 'cart.html', {'cart': cart, 'total_price': total_price})
+
+
+
+# Define the checkout view
+def checkout(request):
+    # You can add logic here for the checkout process if needed
+    return render(request, 'checkout.html')
+
+
 
 def service(request):
     return render(request, 'service.html')
