@@ -31,11 +31,15 @@ urlpatterns = [
     path('about/', view.about, name='about'),
     path('product/', view.product_list, name='product'),
     path('add_to_cart/<int:product_id>/', view.add_to_cart, name='add_to_cart'),
+    path('remove-from-cart/<int:product_id>/', view.remove_from_cart, name='remove_from_cart'),
+    path('decrease-quantity/<int:product_id>/', view.decrease_quantity, name='decrease_quantity'),
+    path('cart/increase/<int:product_id>/', view.increase_quantity, name='increase_quantity'),
     path('cart/', view.cart, name='cart'),
     path('service/', view.service, name='service'),
     path('gallery/', view.gallery, name='gallery'),
     path('contact/', view.contact, name='contact'),
     path('checkout/', view.checkout, name='checkout'),
+    path('thankyou/', view.thankyou, name='thankyou'),
 
 ]
 

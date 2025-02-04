@@ -12,6 +12,7 @@
     <!-- Favicon -->
     <link href="{% static 'img/favicon.ico' %}" rel="icon">
 
+
     <!-- Google Web Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -31,7 +32,7 @@
 
 <body>
     <!-- Topbar Start -->
-    <div class="container-fluid bg-primary py-3 d-none d-md-block">
+    <div class="container-fluid" style="background-color: #f195b2; padding-top: 10px; padding-bottom: 10px; d-none d-md-block">
         <div class="container">
             <div class="row">
                 <div class="col-md-6 text-center text-lg-left mb-2 mb-lg-0">
@@ -112,13 +113,12 @@
     {% block content %}
     <!-- Default content can be added here if needed -->
     {% endblock %}
-
 <!-- Team Start -->
 <div class="container-fluid py-0 m-0">
-    <div class="container py-5">
+    <div class="container py-4">
         <div class="row">
             <div class="col-lg-6">
-                <h1 class="section-title position-relative mb-5">Experienced & Most Famous Ice Cream Chefs</h1>
+                <h1 class="section-title position-relative mb-4">Experienced & Most Famous Ice Cream Chefs</h1>
             </div>
         </div>
         <div class="row">
@@ -129,9 +129,9 @@
                         <div class="team-img mx-auto">
                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-1.jpg' %}" style="object-fit: cover;">
                         </div>
-                        <div class="position-relative text-center bg-light rounded px-4 py-5">
-                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Gordon Ramsay</h3>
-                            <h6 class="text-uppercase text-muted mb-4">Ice Cream Master</h6>
+                        <div class="position-relative text-center bg-light rounded px-3 py-4">
+                            <h3 class="font-weight-bold mt-4 mb-2 pt-4">Gordon Ramsay</h3>
+                            <h6 class="text-uppercase text-muted mb-3">Ice Cream Master</h6>
                             <div class="d-flex justify-content-center pt-1">
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
@@ -145,9 +145,9 @@
                         <div class="team-img mx-auto">
                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-2.jpg' %}" style="object-fit: cover;">
                         </div>
-                        <div class="position-relative text-center bg-light rounded px-4 py-5">
-                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Rachel Ray</h3>
-                            <h6 class="text-uppercase text-muted mb-4">Head Ice Cream Creator</h6>
+                        <div class="position-relative text-center bg-light rounded px-3 py-4">
+                            <h3 class="font-weight-bold mt-4 mb-2 pt-4">Rachel Ray</h3>
+                            <h6 class="text-uppercase text-muted mb-3">Head Ice Cream Creator</h6>
                             <div class="d-flex justify-content-center pt-1">
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
@@ -161,9 +161,9 @@
                         <div class="team-img mx-auto">
                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-3.jpg' %}" style="object-fit: cover;">
                         </div>
-                        <div class="position-relative text-center bg-light rounded px-4 py-5">
-                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Bobby Flay</h3>
-                            <h6 class="text-uppercase text-muted mb-4">Gelato Chef</h6>
+                        <div class="position-relative text-center bg-light rounded px-3 py-4">
+                            <h3 class="font-weight-bold mt-4 mb-2 pt-4">Bobby Flay</h3>
+                            <h6 class="text-uppercase text-muted mb-3">Gelato Chef</h6>
                             <div class="d-flex justify-content-center pt-1">
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
@@ -177,9 +177,9 @@
                         <div class="team-img mx-auto">
                             <img class="rounded-circle w-100 h-100" src="{% static 'img/team-4.jpg' %}" style="object-fit: cover;">
                         </div>
-                        <div class="position-relative text-center bg-light rounded px-4 py-5">
-                            <h3 class="font-weight-bold mt-5 mb-3 pt-5">Tom Colicchio</h3>
-                            <h6 class="text-uppercase text-muted mb-4">Dessert Innovation Chef</h6>
+                        <div class="position-relative text-center bg-light rounded px-3 py-4">
+                            <h3 class="font-weight-bold mt-4 mb-2 pt-4">Tom Colicchio</h3>
+                            <h6 class="text-uppercase text-muted mb-3">Dessert Innovation Chef</h6>
                             <div class="d-flex justify-content-center pt-1">
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-twitter"></i></a>
                                 <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
@@ -193,6 +193,7 @@
     </div>
 </div>
 <!-- Team End -->
+
 
     <!-- Testimonial Start -->
     <div class="container-fluid py-0 m-0">
@@ -232,44 +233,43 @@
         </div>
     </div>
     <!-- Testimonial End -->
-
-    <!-- Footer Start -->
-    <div class="container-fluid footer bg-light py-5 m-0" style="margin-top: 90px;">
-        <div class="container text-center py-5">
-            <div class="row">
-                <div class="col-12 mb-4">
-                    <a href="index.html" class="navbar-brand m-0">
-                        <h1 class="m-0 mt-n2 display-4 text-primary"><span class="text-secondary">CREAM</span>Y</h1>
-                    </a>
-                </div>
-                <div class="col-12 mb-4">
-                    <a class="btn btn-outline-secondary btn-social mr-2" href=""><i class="fab fa-twitter"></i></a>
-                    <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
-                    <a class="btn btn-outline-secondary btn-social" href="#"><i class="fab fa-instagram"></i></a>
-                </div>
-                <div class="col-12 mt-2 mb-4">
-                    <div class="row">
-                        <div class="col-sm-6 text-center text-sm-right border-right mb-3 mb-sm-0">
-                            <h5 class="font-weight-bold mb-2">Get In Touch</h5>
-                            <p class="mb-2">123 Street, New York, USA</p>
-                            <p class="mb-0">+012 345 67890</p>
-                        </div>
-                        <div class="col-sm-6 text-center text-sm-left">
-                            <h5 class="font-weight-bold mb-2">Opening Hours</h5>
-                            <p class="mb-2">Mon – Sat, 8AM – 5PM</p>
-                            <p class="mb-0">Sunday: Closed</p>
-                        </div>
+<!-- Footer Start -->
+<div class="container-fluid footer bg-light py-3 m-0" style="margin-top: 90px;">
+    <div class="container text-center py-4">
+        <div class="row">
+            <div class="col-12 mb-3">
+                <a href="index.html" class="navbar-brand m-0">
+                    <h1 class="m-0 mt-n2 display-4 text-primary"><span class="text-secondary">CREAM</span>Y</h1>
+                </a>
+            </div>
+            <div class="col-12 mb-3">
+                <a class="btn btn-outline-secondary btn-social mr-2" href=""><i class="fab fa-twitter"></i></a>
+                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
+                <a class="btn btn-outline-secondary btn-social mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a class="btn btn-outline-secondary btn-social" href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+            <div class="col-12 mt-2 mb-3">
+                <div class="row">
+                    <div class="col-sm-6 text-center text-sm-right border-right mb-3 mb-sm-0">
+                        <h5 class="font-weight-bold mb-2">Get In Touch</h5>
+                        <p class="mb-1">123 Street, New York, USA</p>
+                        <p class="mb-1">+012 345 67890</p>
+                    </div>
+                    <div class="col-sm-6 text-center text-sm-left">
+                        <h5 class="font-weight-bold mb-2">Opening Hours</h5>
+                        <p class="mb-1">Mon – Sat, 8AM – 5PM</p>
+                        <p class="mb-1">Sunday: Closed</p>
                     </div>
                 </div>
-                <div class="col-12">
-                    <p class="m-0">&copy; <a href="#">Creamy</a>. All Rights Reserved. Designed by <a href="https://htmlcodex.com">Kirti Singla</a>
-                    </p>
-                </div>
+            </div>
+            <div class="col-12">
+                <p class="m-0">&copy; <a href="#">Creamy</a>. All Rights Reserved. Designed by <a href="https://htmlcodex.com">Kirti Singla</a></p>
             </div>
         </div>
     </div>
-    <!-- Footer End -->
+</div>
+<!-- Footer End -->
+
 
     <!-- Back to Top -->
     <a href="#" class="btn btn-secondary px-2 back-to-top"><i class="fa fa-angle-double-up"></i></a>
