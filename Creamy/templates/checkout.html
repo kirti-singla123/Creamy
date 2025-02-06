@@ -82,7 +82,7 @@
     <div class="container-fluid position-relative nav-bar p-0">
         <div class="container-lg position-relative p-0 px-lg-3" style="z-index: 9;">
             <nav class="navbar navbar-expand-lg bg-white navbar-light shadow p-lg-0">
-                <a href="index.html" class="navbar-brand d-block d-lg-none">
+                <a href="#" class="navbar-brand d-block d-lg-none">
                     <h1 class="m-0 display-4 text-primary"><span class="text-secondary">CREAM</span>Y</h1>
                 </a>
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
@@ -94,7 +94,7 @@
                         <a href="{% url 'about' %}" class="nav-item nav-link">About</a>
                         <a href="{% url 'product' %}" class="nav-item nav-link">Product</a>
                     </div>
-                    <a href="index.html" class="navbar-brand mx-5 d-none d-lg-block">
+                    <a href="#" class="navbar-brand mx-5 d-none d-lg-block">
                         <h1 class="m-0 display-4 text-primary"><span class="text-secondary">CREAM</span>Y</h1>
                     </a>
                     <div class="navbar-nav mr-auto py-0">
@@ -309,6 +309,14 @@
               </div>
             </div>
 
+              <div class="col-12">
+  <label for="phone" class="form-label">Phone number</label>
+  <input type="tel" class="form-control" id="phone" placeholder="(555) 123-4567" required>
+  <div class="invalid-feedback">
+    Please enter a valid phone number.
+  </div>
+</div>
+
             <div class="col-12">
               <label for="address" class="form-label">Address</label>
               <input type="text" class="form-control" id="address" placeholder="1234 Main St" required>
@@ -363,61 +371,191 @@
             <input type="checkbox" class="form-check-input" id="save-info">
             <label class="form-check-label" for="save-info">Save this information for next time</label>
           </div>
+<!-- HTML structure -->
+<hr class="my-4">
+<h4>
+    <i class="far fa-credit-card"></i> Sweet Payment Choices
+</h4>
 
-          <hr class="my-4">
-          <h4>
-                <i class="far fa-credit-card"></i> Sweet Payment Choices
-            </h4>
+<div class="my-3">
+    <div class="form-check">
+        <input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked required>
+        <label class="form-check-label" for="credit">Credit card</label>
+    </div>
+    <div class="form-check">
+        <input id="debit" name="paymentMethod" type="radio" class="form-check-input" required>
+        <label class="form-check-label" for="debit">Debit card</label>
+    </div>
+    <div class="form-check">
+        <input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required>
+        <label class="form-check-label" for="paypal">PayPal</label>
+    </div>
+</div>
 
-            <div class="my-3">
-            <div class="form-check">
-              <input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked required>
-              <label class="form-check-label" for="credit">Credit card</label>
-            </div>
-            <div class="form-check">
-              <input id="debit" name="paymentMethod" type="radio" class="form-check-input" required>
-              <label class="form-check-label" for="debit">Debit card</label>
-            </div>
-            <div class="form-check">
-              <input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required>
-              <label class="form-check-label" for="paypal">PayPal</label>
-            </div>
-          </div>
 
-          <div class="row gy-3">
-            <div class="col-md-6">
-              <label for="cc-name" class="form-label">Name on card</label>
-              <input type="text" class="form-control" id="cc-name" placeholder="" required>
-              <small class="text-body-secondary">Full name as displayed on card</small>
-              <div class="invalid-feedback">
-                Name on card is required
-              </div>
-            </div>
+    <!-- Credit Card Fields -->
+<div class="row gy-3" id="creditCardFields">
+    <div class="col-md-6">
+        <label for="cc-name" class="form-label">Name on Credit Card</label>
+        <input type="text" class="form-control" id="cc-name" placeholder="Enter the name on the card" required>
+        <div class="invalid-feedback">
+            Name on card is required
+        </div>
+    </div>
 
-            <div class="col-md-6">
-              <label for="cc-number" class="form-label">Credit card number</label>
-              <input type="text" class="form-control" id="cc-number" placeholder="" required>
-              <div class="invalid-feedback">
-                Credit card number is required
-              </div>
-            </div>
+    <div class="col-md-6">
+        <label for="cc-number" class="form-label">Credit Card Number</label>
+        <input type="text" class="form-control" id="cc-number" placeholder="Enter the card number" required>
+        <div class="invalid-feedback">
+            Credit card number is required
+        </div>
+    </div>
 
-            <div class="col-md-3">
-              <label for="cc-expiration" class="form-label">Expiration</label>
-              <input type="text" class="form-control" id="cc-expiration" placeholder="" required>
-              <div class="invalid-feedback">
-                Expiration date required
-              </div>
-            </div>
+    <div class="col-md-3">
+        <label for="cc-expiration" class="form-label">Expiration Date</label>
+        <input type="text" class="form-control" id="cc-expiration" placeholder="MM/YY" required>
+        <div class="invalid-feedback">
+            Expiration date is required
+        </div>
+    </div>
 
-            <div class="col-md-3">
-              <label for="cc-cvv" class="form-label">CVV</label>
-              <input type="text" class="form-control" id="cc-cvv" placeholder="" required>
-              <div class="invalid-feedback">
-                Security code required
-              </div>
-            </div>
-          </div>
+    <div class="col-md-3">
+        <label for="cc-cvv" class="form-label">CVV</label>
+        <input type="text" class="form-control" id="cc-cvv" placeholder="Enter CVV" required>
+        <div class="invalid-feedback">
+            Security code is required
+        </div>
+    </div>
+</div>
+
+<!-- PayPal Fields -->
+<div class="row gy-3" id="paypalFields" style="display:none;">
+    <div class="col-md-12">
+        <label for="paypal-email" class="form-label">PayPal Email</label>
+        <input type="email" class="form-control" id="paypal-email" placeholder="you@example.com" required>
+        <div class="invalid-feedback">
+            Please provide your PayPal email.
+        </div>
+    </div>
+</div>
+
+<!-- Debit Card Fields -->
+<div class="row gy-3" id="debitFields" style="display:none;">
+    <div class="col-md-6">
+        <label for="debit-name" class="form-label">Name on Debit Card</label>
+        <input type="text" class="form-control" id="debit-name" placeholder="Enter the name on the card" required>
+        <div class="invalid-feedback">
+            Name on debit card is required
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <label for="debit-number" class="form-label">Debit Card Number</label>
+        <input type="text" class="form-control" id="debit-number" placeholder="Enter the card number" required>
+        <div class="invalid-feedback">
+            Debit card number is required
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <label for="debit-expiration" class="form-label">Expiration Date</label>
+        <input type="text" class="form-control" id="debit-expiration" placeholder="MM/YY" required>
+        <div class="invalid-feedback">
+            Expiration date is required
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <label for="debit-cvv" class="form-label">CVV</label>
+        <input type="text" class="form-control" id="debit-cvv" placeholder="Enter CVV" required>
+        <div class="invalid-feedback">
+            Security code is required
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        height: calc(2.25rem + 2px);
+        font-size: 1rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+    }
+
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: #dc3545;
+        margin-top: 0.25rem;
+    }
+
+    .col-md-3 {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .row {
+        margin-bottom: 1rem;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+    }
+</style>
+
+<!-- Terms and conditions checkbox -->
+<div class="form-check">
+    <input type="checkbox" class="form-check-input" id="terms" required>
+    <label class="form-check-label" for="terms">I agree to the <a href="#">terms and conditions</a>.</label>
+    <div class="invalid-feedback">
+        You must agree to the terms and conditions.
+    </div>
+</div>
+
+<!-- JavaScript for Dynamic Form Display -->
+<script>
+    // Get the payment method radio buttons
+    const creditRadio = document.getElementById('credit');
+    const debitRadio = document.getElementById('debit');
+    const paypalRadio = document.getElementById('paypal');
+
+    // Get the payment fields for each type
+    const creditCardFields = document.getElementById('creditCardFields');
+    const paypalFields = document.getElementById('paypalFields');
+    const debitFields = document.getElementById('debitFields');
+
+    // Function to show and hide fields based on selected payment method
+    function updatePaymentFields() {
+        if (creditRadio.checked) {
+            creditCardFields.style.display = 'block';
+            paypalFields.style.display = 'none';
+            debitFields.style.display = 'none';
+        } else if (debitRadio.checked) {
+            creditCardFields.style.display = 'none';  // Hide Credit Card fields
+            paypalFields.style.display = 'none';
+            debitFields.style.display = 'block';  // Show Debit Card fields
+        } else if (paypalRadio.checked) {
+            creditCardFields.style.display = 'none';
+            paypalFields.style.display = 'block';
+            debitFields.style.display = 'none';
+        }
+    }
+
+    // Event listeners to update fields on radio button change
+    creditRadio.addEventListener('change', updatePaymentFields);
+    debitRadio.addEventListener('change', updatePaymentFields);
+    paypalRadio.addEventListener('change', updatePaymentFields);
+
+    // Initialize the fields based on the current selection
+    updatePaymentFields();
+</script>
 
 
           <hr class="my-4">
@@ -437,7 +575,7 @@
     <div class="container text-center py-4">
         <div class="row">
             <div class="col-12 mb-3">
-                <a href="index.html" class="navbar-brand m-0">
+                <a href="#" class="navbar-brand m-0">
                     <h1 class="m-0 mt-n2 display-4 text-primary"><span class="text-secondary">CREAM</span>Y</h1>
                 </a>
             </div>

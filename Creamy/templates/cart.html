@@ -112,19 +112,26 @@
                     {% empty %}
                     <p class="text-center" style="font-size: 1.5rem;">
                         Your cart is empty... like an ice cream cone without its scoop! 🍦 <br>
-                        Start Scooping!
+
                     </p>
+                    <div class="text-center">
+                        <a href="{% url 'product' %}" class="btn" style="background-color: #F195B2; color: white; border: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 5px; text-decoration: none;" onmouseover="this.style.backgroundColor='#e85181';" onmouseout="this.style.backgroundColor='#F195B2';">
+                            Start Scooping
+                        </a>
+                    </div>
                     {% endfor %}
 
                     <div class="cart-total text-center">
                         <h4>Total: ${{ total_price }}</h4>
                     </div>
 
+                    {% if cart.items %}
                     <div class="text-center">
                         <a href="{% url 'checkout' %}" class="btn" style="background-color: #F195B2; color: white; border: none; font-size: 1.2rem; padding: 10px 20px; border-radius: 5px; text-decoration: none;" onmouseover="this.style.backgroundColor='#e85181';" onmouseout="this.style.backgroundColor='#F195B2';">
                             Order My Scoop
                         </a>
                     </div>
+                    {% endif %}
 
                 </div>
             </div>
