@@ -9817,6 +9817,7 @@ h6,
 }
 
 .section-title::before {
+content: none !important;
   position: absolute;
   content: "";
   top: -10px;
@@ -9838,6 +9839,7 @@ h6,
 
 .section-title.text-center::before,
 .section-title.text-center::after {
+content: none !important;
   left: calc(50% - 50px);
 }
 
@@ -9971,6 +9973,8 @@ h6,
 }
 
 .service-item .service-img::before {
+  display: none !important;
+  background: transparent !important;
   position: absolute;
   content: "";
   top: 15px;
@@ -10125,7 +10129,7 @@ h6,
   right: -5px;
   bottom: -5px;
   left: -5px;
-  border: 2px solid #F195B2;
+  border: 2px solid #F195B2 ;
   border-radius: 20px;
 }
 

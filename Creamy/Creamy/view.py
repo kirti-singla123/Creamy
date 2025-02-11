@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from Home.models import Product, Contact
+from Home.models import Order
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from datetime import datetime
 from django.http import JsonResponse
+from Home.forms import OrderForm
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+
 
 # password for test user: HARRYdonal
 
@@ -138,7 +143,21 @@ def increase_quantity(request, product_id):
 
 # Checkout view
 def checkout(request):
-    return render(request, 'checkout.html')
+    if request.method == 'POST':  # When the form is submitted
+        form = OrderForm(request.POST)  # Create the form with POST data
+
+        if form.is_valid():  # Check if the form is valid
+            # If the form is valid, save the data to the database and redirect
+            order = form.save()
+            return redirect('thankyou')  # Redirect to a thank you page or another success page
+        else:
+            # If the form is not valid, print the errors
+            print(form.errors)  # This will print the form errors to the console
+
+    else:
+        form = OrderForm()  # If the request method is not POST, just display an empty form
+
+    return render(request, 'checkout.html', {'form': form})  # Return the form to the template
 
 def thankyou(request):
     return render(request, 'thankyou.html')
@@ -163,3 +182,18 @@ def contact(request):
         return JsonResponse({"message": "Your message has been sent!"})
 
     return render(request, 'contact.html')
+
+def order(request):
+    if request.method == 'POST':
+        print("POST request received")  # This will print in your console when the form is submitted
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            order = form.save()  # Save the form and return the saved order
+            print("Order saved:", order)  # This will print the saved order to the console for debugging
+            return HttpResponseRedirect('/thankyou/')  # Try using a hardcoded URL as a test
+        else:
+            print("Form errors:", form.errors)  # Print form errors to the console if validation fails
+    else:
+        print("GET request received")  # This will print if the page is accessed without submitting the form
+
+    return render(request, 'checkout.html', {'form': form})

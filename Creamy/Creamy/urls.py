@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
-from .import view
+from Creamy import view
 
 
 urlpatterns = [
@@ -40,6 +40,7 @@ urlpatterns = [
     path('contact/', view.contact, name='contact'),
     path('checkout/', view.checkout, name='checkout'),
     path('thankyou/', view.thankyou, name='thankyou'),
+    path('order/', view.order, name='order'),
 
 ]
 
