@@ -125,6 +125,12 @@
                 <h4 class="display-4 text-primary"><i class="fas fa-shipping-fast"></i> Scoop Delivery Info</h4>
             </div>
          {{ form.as_p }}
+
+           <ul>
+        {% for product in products_in_cart %}
+            <li>{{ product.name }} - ${{ product.price }} x {{ product.quantity }} = ${{ product.price|floatformat:2 }}</li>
+        {% endfor %}
+    </ul>
                 <button class="btn btn-primary" type="submit">Place Order</button>
             </main>
         </div>

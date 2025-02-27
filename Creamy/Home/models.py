@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 import json
 # Create your models here.
 
@@ -22,39 +23,34 @@ class Contact(models.Model):
     def __str__(self):
         return self.name
 
-
-
 class Order(models.Model):
     # Delivery Info
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email_address = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    address = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=100, default=" ")
+    email_address = models.EmailField(max_length=255, default=" ")
+    phone_number = models.CharField(max_length=15, default=" ")
+    address = models.CharField(max_length=255, default=" ")
 
-    # Country Choices (You can add more countries to this list)
+    # Country Choices
     COUNTRY_CHOICES = [
         ('US', 'United States'),
         ('CA', 'Canada'),
         ('GB', 'United Kingdom'),
         ('IN', 'India'),
         ('AU', 'Australia'),
-        # Add more countries as needed
     ]
-    country = models.CharField(max_length=2, choices=COUNTRY_CHOICES)
+    country = models.CharField(max_length=100, choices=COUNTRY_CHOICES, default=" ")
 
-    # State Choices (You can add more states or dynamic states based on country)
+    # State Choices
     STATE_CHOICES = [
         ('CA', 'California'),
         ('NY', 'New York'),
         ('TX', 'Texas'),
         ('FL', 'Florida'),
         ('IL', 'Illinois'),
-        # Add more states or dynamically generate based on country
     ]
-    state = models.CharField(max_length=2, choices=STATE_CHOICES)
+    state = models.CharField(max_length=2, choices=STATE_CHOICES, default=" ")
 
-    zip_code = models.CharField(max_length=20)
+    zip_code = models.CharField(max_length=20, default="")
 
     # Payment Info
     PAYMENT_CHOICES = [
@@ -84,7 +80,12 @@ class Order(models.Model):
     save_info = models.BooleanField(default=False)
     agreed_to_terms = models.BooleanField(default=False)
 
+    # Relationship to Products
+    products = models.ManyToManyField(Product)
+
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Order {self.id} - {self.first_name} {self.last_name}"
+        return f"Order {self.id} - {self.full_name}"

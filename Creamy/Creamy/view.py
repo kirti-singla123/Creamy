@@ -7,10 +7,13 @@ from datetime import datetime
 from django.http import JsonResponse
 from Home.forms import OrderForm
 from django.http import HttpResponseRedirect
+from django.conf import settings
+import stripe
+import re
 from django.http import HttpResponse
 
-
-# password for test user: HARRYdonal
+# Set your Stripe API key
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # View for Login
 def login_view(request):
@@ -25,17 +28,54 @@ def login_view(request):
             return render(request, 'login.html', {'error': 'Invalid credentials'})
     return render(request, 'login.html')
 
+
+# Function to check password strength
+def is_strong_password(password):
+    # Add your password strength checking logic here
+    return len(password) >= 8 and any(char.isdigit() for char in password) and any(char in '!@#$%^&*()_+' for char in password)
+
+# Function to check if password is too similar to username or email
+def is_password_similar(username, password, confirm_password):
+    return username.lower() in password.lower() or password.lower() == confirm_password.lower()
+
 # View for Sign Up
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
+
         if form.is_valid():
-            form.save()
-            return redirect('login')  # Redirect to login page after successful sign-up
+            # Extract cleaned data (username, password, confirm password)
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            confirm_password = form.cleaned_data['password2']  # This is the confirm password field
+
+            # Check if password is strong enough
+            if not is_strong_password(password):
+                form.add_error('password1',
+                               "Password is too weak. It should have at least 8 characters, a number, and a special character.")
+
+            # Check if password and confirm password match
+            elif password != confirm_password:
+                form.add_error('password2', "The passwords do not match.")
+
+            # If no errors, save the user and log them in
+            if not form.errors:
+                # Save the user object
+                user = form.save()
+
+                # Log the user in automatically
+                login(request, user)
+
+                # Redirect to the homepage or any page you prefer
+                return redirect('home')  # Change 'home' to whatever URL you want the user to be redirected to
         else:
-            return render(request, 'signup.html', {'form': form, 'error': form.errors})
+            print("Form errors:", form.errors)  # Debugging errors
+
+        # Return the form with errors back to the sign-up page
+        return render(request, 'signup.html', {'form': form, 'error': form.errors})
     else:
         form = UserCreationForm()
+
     return render(request, 'signup.html', {'form': form})
 
 def logout_view(request):
@@ -58,39 +98,67 @@ def get_cart(request):
 
 # Add to Cart view
 def add_to_cart(request, product_id):
-    cart = get_cart(request)
+    cart = get_cart(request)  # Fetch or initialize the cart from the session
 
     # Get the product by ID or return a 404 if it does not exist
     product = get_object_or_404(Product, id=product_id)
 
-    # Convert price to float before storing in session
     price = float(product.price)
 
-    # If the product is already in the cart, increment the quantity
+    # Check if the product is already in the cart, if so, increment the quantity
     if str(product.id) in cart:
-        cart[str(product.id)]['quantity'] += 1
+        cart[str(product.id)]['quantity'] += 1  # Increment the quantity
     else:
+        # Add the product to the cart session with all required fields
         cart[str(product.id)] = {
             'name': product.name,
-            'price': price,
-            'quantity': 1,
-            'image': product.image.name,
+            'price': float(product.price),  # Ensure price is stored as a float
+            'quantity': 1,  # Default to 1 when adding a product
+            'image': product.image.url if product.image else None,  # Use the URL if the image exists
+            'product_id': product.id,  # Ensure this field is added to the cart
         }
 
-    # Save the cart back into session
+    # Save the updated cart back into session
     request.session['cart'] = cart
+
+    # Debugging: Output the updated cart structure to the console
+    print("Updated Cart:", cart)
 
     # Redirect to the cart page
     return redirect('cart')
 
-# Your cart view
+# Cart view
 def cart(request):
-    cart = get_cart(request)
-
+    cart = get_cart(request)  # Get the cart from the session
     # Calculate the total price
     total_price = sum(item['price'] * item['quantity'] for item in cart.values())
+    products_in_cart = []  # List to store products in cart along with details
 
-    return render(request, 'cart.html', {'cart': cart, 'total_price': total_price})
+    # Debugging: Output the structure of the cart
+    print("Cart structure:", cart)
+
+    # Loop through each item in the cart
+    for product_id, item in cart.items():
+        # Debugging: Output each product_id and item
+        print(f"Processing product ID: {product_id} with item: {item}")
+
+        # Check if 'product_id' exists in the item
+        if 'product_id' in item:
+            # Fetch the product details from the Product model
+            product = Product.objects.get(id=item['product_id'])  # Get product by ID
+            item['product'] = product  # Add the full product object to the item
+            products_in_cart.append(item)  # Append this item to the products_in_cart list
+            total_price += item['price'] * item['quantity']  # Add to the total price
+        else:
+            # If 'product_id' is missing, print a warning
+            print(f"Warning: 'product_id' not found in item: {item}")
+
+    # Render the cart page with the cart data and total price
+    return render(request, 'cart.html', {
+        'cart': cart,
+        'total_price': total_price,
+        'products_in_cart': products_in_cart
+    })
 
 # Remove from Cart view
 def remove_from_cart(request, product_id):
@@ -143,24 +211,43 @@ def increase_quantity(request, product_id):
 
 # Checkout view
 def checkout(request):
-    if request.method == 'POST':  # When the form is submitted
-        form = OrderForm(request.POST)  # Create the form with POST data
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
 
-        if form.is_valid():  # Check if the form is valid
-            # If the form is valid, save the data to the database and redirect
-            order = form.save()
-            return redirect('thankyou')  # Redirect to a thank you page or another success page
-        else:
-            # If the form is not valid, print the errors
-            print(form.errors)  # This will print the form errors to the console
+        if form.is_valid():
+            # Create the order
+            order = form.save(commit=False)  # Don't save yet to modify before saving
+
+            # Assign cart products to the order
+            cart = get_cart(request)
+            total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
+            order.total_amount = total_amount
+
+            # Save the order
+            order.save()
+
+            # Add the products in the cart to the order
+            for item in cart.values():
+                product = Product.objects.get(id=item['product_id'])
+                order.products.add(product)
+
+            # Clear the cart after order creation
+            request.session['cart'] = {}
+
+            return redirect('thankyou')  # Redirect to a 'thank you' page after order is placed
 
     else:
-        form = OrderForm()  # If the request method is not POST, just display an empty form
+        form = OrderForm()
 
-    return render(request, 'checkout.html', {'form': form})  # Return the form to the template
+    return render(request, 'checkout.html', {'form': form})
+
 
 def thankyou(request):
-    return render(request, 'thankyou.html')
+    # Get the most recent order
+    order = Order.objects.latest('created_at')  # Fetch the latest order by creation date
+
+    # Pass the order to the 'thankyou.html' template
+    return render(request, 'thankyou.html', {'order': order})
 
 def service(request):
     return render(request, 'service.html')

@@ -60,6 +60,21 @@
             text-align: center;
             color: #e17c9a;
         }
+
+        .order-details {
+            margin-top: 30px;
+            font-size: 1.1rem;
+            color: #e17c9a;
+        }
+
+        .order-details ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .order-details ul li {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -68,8 +83,18 @@
     <div class="ice-cream-icon">
         🍦
     </div>
-    <h1>Thank You for Your Order!</h1>
-    <p>Your scoop is on its way! Get ready for a sweet experience! </p>
+    <h1>Thank You for Your Order {{ order.full_name }}!</h1>
+    <p>Your scoop is on its way! Get ready for a sweet experience!</p>
+
+    <div class="order-details">
+        <p><strong>Your Order ID:</strong> {{ order.id }}</p>
+        <ul>
+            {% for product in order.products.all %}
+                <li>{{ product.name }} - ${{ product.price }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <a href="/" class="btn btn-primary">Go to Home</a>
 
     <div class="footer">

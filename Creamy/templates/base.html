@@ -88,18 +88,18 @@
                 </button>
                 <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                     <div class="navbar-nav ml-auto py-0">
-                        <a href="{% url 'home' %}" class="nav-item nav-link active">Home</a>
-                        <a href="{% url 'about' %}" class="nav-item nav-link">About</a>
-                        <a href="{% url 'product' %}" class="nav-item nav-link">Product</a>
+                        <a href="{% url 'home' %}" class="nav-item nav-link {% if request.path == '/home/' %}active{% endif %}">Home</a>
+                        <a href="{% url 'about' %}" class="nav-item nav-link {% if request.path == '/about/' %}active{% endif %}">About</a>
+                        <a href="{% url 'product' %}" class="nav-item nav-link {% if request.path == '/product/' %}active{% endif %}">Product</a>
                     </div>
                     <a href="#" class="navbar-brand mx-5 d-none d-lg-block">
                         <h1 class="m-0 display-4 text-primary"><span class="text-secondary">CREAM</span>Y</h1>
                     </a>
                     <div class="navbar-nav mr-auto py-0">
-                        <a href="{% url 'service' %}" class="nav-item nav-link">Service</a>
-                        <a href="{% url 'gallery' %}" class="nav-item nav-link">Gallery</a>
-                        <a href="{% url 'contact' %}" class="nav-item nav-link">Contact</a>
-                        <a href="{% url 'cart' %}" class="nav-item nav-link">
+                        <a href="{% url 'service' %}" class="nav-item nav-link {% if request.path == '/service/' %}active{% endif %}">Service</a>
+                        <a href="{% url 'gallery' %}" class="nav-item nav-link {% if request.path == '/gallery/' %}active{% endif %}">Gallery</a>
+                        <a href="{% url 'contact' %}" class="nav-item nav-link {% if request.path == '/contact/' %}active{% endif %}">Contact</a>
+                        <a href="{% url 'cart' %}" class="nav-item nav-link {% if request.path == '/cart/' %}active{% endif %}">
                             <i class="fas fa-shopping-cart"></i> Cart
                             <span class="badge badge-pill badge-danger">{{ cart_item_count }}</span>
                         </a>

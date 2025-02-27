@@ -103,6 +103,16 @@
         .text-center a:hover {
             text-decoration: underline;
         }
+
+        /* Error Message Styling */
+        .error {
+            color: red;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -116,18 +126,39 @@
         <div class="input-field">
             <label for="username">Full Name</label>
             {{ form.username }} <!-- Rendered form field -->
+            {% if form.username.errors %}
+                <div class="error-message">
+                    {% for error in form.username.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <!-- Password Field -->
         <div class="input-field">
             <label for="password1">Password</label>
             {{ form.password1 }} <!-- Rendered form field -->
+            {% if form.password1.errors %}
+                <div class="error-message">
+                    {% for error in form.password1.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <!-- Confirm Password Field -->
         <div class="input-field">
             <label for="password2">Confirm Password</label>
             {{ form.password2 }} <!-- Rendered form field -->
+            {% if form.password2.errors %}
+                <div class="error-message">
+                    {% for error in form.password2.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <!-- Submit Button -->
@@ -139,7 +170,6 @@
         <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
     </div>
 </div>
-
 
 </body>
 </html>
