@@ -1,6 +1,7 @@
 from django.db import models
-from django.utils import timezone
 import json
+from django.utils import timezone
+
 # Create your models here.
 
 
@@ -52,7 +53,6 @@ ORDER_STATUS_CHOICES = [
     ('delivered', 'Delivered'),
     ('cancelled', 'Cancelled'),
 ]
-
 class Order(models.Model):
     # Delivery Info
     full_name = models.CharField(max_length=100, default=" ")
@@ -98,6 +98,15 @@ class Order(models.Model):
     # Order status choices
     order_status = models.CharField(max_length=10, choices=ORDER_STATUS_CHOICES, default='pending')
 
+    # Many-to-Many relationship with Product model
+    products = models.ManyToManyField(Product, related_name='orders', blank=True)
+
+    # New cart_data field to store cart items as JSON
+    cart_data = models.TextField(max_length=1000, null=True, blank=True)  # This will store the cart items (product IDs, quantities, etc.)
+
     def __str__(self):
         return f"Order {self.id} - {self.full_name}"
 
+    # Method to save cart data as JSON string
+    def save_cart_data(self, cart_data):
+        self.cart_data = json.dumps(cart_data)

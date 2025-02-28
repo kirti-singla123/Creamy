@@ -130,7 +130,7 @@ def add_to_cart(request, product_id):
 # Cart view
 def cart(request):
     cart = get_cart(request)  # Get the cart from the session
-    # Calculate the total price
+    # Calculate the total price only once
     total_price = sum(item['price'] * item['quantity'] for item in cart.values())
     products_in_cart = []  # List to store products in cart along with details
 
@@ -148,7 +148,6 @@ def cart(request):
             product = Product.objects.get(id=item['product_id'])  # Get product by ID
             item['product'] = product  # Add the full product object to the item
             products_in_cart.append(item)  # Append this item to the products_in_cart list
-            total_price += item['price'] * item['quantity']  # Add to the total price
         else:
             # If 'product_id' is missing, print a warning
             print(f"Warning: 'product_id' not found in item: {item}")
