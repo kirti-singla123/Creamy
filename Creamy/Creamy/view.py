@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from Home.forms import OrderForm
 from django.http import HttpResponseRedirect
 from django.conf import settings
+import json
 import stripe
 import re
 from django.http import HttpResponse
@@ -208,24 +209,25 @@ def increase_quantity(request, product_id):
     # Redirect back to the cart
     return redirect('cart')
 
-# Checkout view
 def checkout(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
 
         if form.is_valid():
-            # Create the order
-            order = form.save(commit=False)  # Don't save yet to modify before saving
+            # Create the order instance but don't save it yet
+            order = form.save(commit=False)
 
-            # Assign cart products to the order
+            # Retrieve the cart from the session
             cart = get_cart(request)
-            total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
-            order.total_amount = total_amount
 
-            # Save the order
+            # Calculate the total amount from cart items
+            total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
+            order.total_amount = total_amount  # Set total amount for the order
+
+            # Save the order to the database
             order.save()
 
-            # Add the products in the cart to the order
+            # Add the products from the cart to the order
             for item in cart.values():
                 product = Product.objects.get(id=item['product_id'])
                 order.products.add(product)
@@ -233,12 +235,26 @@ def checkout(request):
             # Clear the cart after order creation
             request.session['cart'] = {}
 
-            return redirect('thankyou')  # Redirect to a 'thank you' page after order is placed
+            # Redirect to a thank you page after successful order
+            return redirect('thankyou')  # Adjust this URL as needed
 
     else:
+        # Initialize an empty form for the GET request (initial checkout page load)
         form = OrderForm()
 
-    return render(request, 'checkout.html', {'form': form})
+    # Retrieve the cart data from session (if any)
+    cart = get_cart(request)  # This will return a dictionary of cart items
+
+    # Calculate total price for each cart item and the overall total amount
+    cart_items_with_total = []
+    total_amount = 0
+    for item in cart.values():
+        item_total = item['price'] * item['quantity']
+        total_amount += item_total
+        cart_items_with_total.append({**item, 'total': item_total})
+
+    # Render the checkout page, passing the form, cart items with total, and total amount
+    return render(request, 'checkout.html', {'form': form, 'cart': cart_items_with_total, 'total_amount': total_amount})
 
 
 def thankyou(request):
@@ -271,15 +287,64 @@ def contact(request):
 
 def order(request):
     if request.method == 'POST':
-        print("POST request received")  # This will print in your console when the form is submitted
+        print("POST request received")  # Debugging output
         form = OrderForm(request.POST)
-        if form.is_valid():
-            order = form.save()  # Save the form and return the saved order
-            print("Order saved:", order)  # This will print the saved order to the console for debugging
-            return HttpResponseRedirect('/thankyou/')  # Try using a hardcoded URL as a test
-        else:
-            print("Form errors:", form.errors)  # Print form errors to the console if validation fails
-    else:
-        print("GET request received")  # This will print if the page is accessed without submitting the form
 
-    return render(request, 'checkout.html', {'form': form})
+        if form.is_valid():
+            # Create the order instance without saving it yet
+            order = form.save(commit=False)
+
+            # Retrieve the cart data from session
+            cart = get_cart(request)
+
+            if not cart:  # If the cart is empty, prevent order creation
+                print("Cart is empty, cannot proceed with order")
+                return redirect('cart')  # Redirect the user back to the cart
+
+            # Calculate the total amount for the order
+            total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
+            order.total_amount = total_amount  # Set the total amount
+
+            # Save the order
+            order.save()
+
+            # Add products from the cart to the order
+            for item in cart.values():
+                product = Product.objects.get(id=item['product_id'])
+                order.products.add(product)
+
+            # Optionally, store cart data in the order model (if you need it for later reference)
+            order.cart_data = json.dumps(cart)  # Save the cart data as a JSON string
+            order.save()
+
+            # Clear the cart after the order is placed
+            request.session['cart'] = {}
+
+            print("Order saved:", order)  # Debugging output
+
+            # Redirect to the 'thankyou' page
+            return redirect('thankyou')  # Use Django's URL reverse system to redirect
+
+        else:
+            print("Form errors:", form.errors)  # Debugging output for form validation errors
+
+    else:
+        print("GET request received")  # Debugging output for GET request
+
+        # If GET, initialize the form
+        form = OrderForm()
+
+    # Retrieve the cart data (for displaying in the checkout page)
+    cart = get_cart(request)
+    cart_items_with_total = []
+    total_amount = 0
+    for item in cart.values():
+        item_total = item['price'] * item['quantity']
+        total_amount += item_total
+        cart_items_with_total.append({**item, 'total': item_total})
+
+    return render(request, 'checkout.html', {
+        'form': form,
+        'cart': cart_items_with_total,
+        'total_amount': total_amount
+    })

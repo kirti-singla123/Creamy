@@ -2,10 +2,6 @@ import json
 from django.contrib import admin
 from .models import Product, Contact, Order
 
-import json
-from django.contrib import admin
-from .models import Product, Contact, Order
-
 # Customize OrderAdmin to show order status, total amount, cart data, etc. in the list view
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
@@ -43,11 +39,22 @@ class OrderAdmin(admin.ModelAdmin):
         try:
             # Deserialize the cart_data string into a Python dictionary
             cart_data = json.loads(obj.cart_data) if obj.cart_data else {}
-            return str(cart_data)[:100]  # Display a truncated version of the cart data (first 100 characters)
+
+            # Extract only name, price, and quantity for each item
+            simplified_cart_data = []
+            for product in cart_data.values():
+                # Only use the necessary fields: name, price, and quantity
+                simplified_cart_data.append(
+                    f"{product['name']} (Qty: {product['quantity']}, Price: ${product['price']})"
+                )
+
+            # Join the simplified cart data with a comma and return it
+            # Truncate to 100 characters for better display in the admin panel
+            return ', '.join(simplified_cart_data)[:100]  # Truncate to 100 characters
+
         except (TypeError, json.JSONDecodeError):
             return "Invalid Cart Data"
 
-    cart_data_display.short_description = 'Cart Data'  # Label the column as 'Cart Data'
 
 # Register your models with the admin site
 admin.site.register(Product)

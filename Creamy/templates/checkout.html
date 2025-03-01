@@ -119,104 +119,139 @@
                     <h3>Indulge in Sweetness</h3>
                     <p class="lead">"Your ice cream order is just a few steps away! Let’s wrap things up and get your tasty treat to you."</p>
                 </div>
-                <div class="container mt-3">
-                    <div class="card p-3 shadow-sm">
 
-                        <div class="container mt-4">
-                            <div class="card p-3 shadow-lg rounded">
-                                <div class="card">
-                                    <div class="card-header" style="background-color: #f195b2; color: white; text-align: center;">
-                                        <h5>Scoop Delivery Info</h5>
-                                    </div>
-                                    <div class="card-body" style="padding-top: 10px;">
-                                        <form method="POST" class="needs-validation" novalidate>
-                                            {% csrf_token %}
+                <div class="row">
+                    <!-- Checkout Form Section -->
+                    <div class="col-md-8">
+                        <div class="card p-3 shadow-sm">
+                            <!-- Delivery Information Form -->
+                            <div class="container mt-4">
+                                <div class="card p-3 shadow-lg rounded">
+                                    <div class="card">
+                                        <div class="card-header" style="background-color: #f195b2; color: white; text-align: center;">
+                                            <h5>Scoop Delivery Info</h5>
+                                        </div>
+                                        <div class="card-body" style="padding-top: 10px;">
+                                            <form method="POST" class="needs-validation" novalidate>
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_full_name">Full Name</label>
+                                                            {{ form.full_name }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_email_address">Email Address</label>
+                                                            {{ form.email_address }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_phone_number">Phone Number</label>
+                                                            {{ form.phone_number }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_address">Address</label>
+                                                            {{ form.address }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_country">Country</label>
+                                                            {{ form.country }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_state">State</label>
+                                                            {{ form.state }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_zip_code">ZIP Code</label>
+                                                            {{ form.zip_code }}
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                            <div class="row">
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_full_name">Full Name</label>
-                                                        {{ form.full_name }}
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_email_address">Email Address</label>
-                                                        {{ form.email_address }}
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_phone_number">Phone Number</label>
-                                                        {{ form.phone_number }}
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_address">Address</label>
-                                                        {{ form.address }}
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_country">Country</label>
-                                                        {{ form.country }}
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_state">State</label>
-                                                        {{ form.state }}
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_zip_code">ZIP Code</label>
-                                                        {{ form.zip_code }}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_payment_method">Payment Method</label>
-                                                        {{ form.payment_method }}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="payment-method-fields">
-                                                <div id="credit-card-fields" style="display:none;">
-                                                    <div class="row">
-                                                        <div class="col-12 col-md-6">
-                                                            <div class="form-group mb-3">
-                                                                <label for="id_cc_name">Credit Card Holder Name</label>
-                                                                {{ form.cc_name }}
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="form-group mb-3">
+                                                            <label for="id_payment_method">Payment Method</label>
+                                                            <div>
+                                                                <input type="radio" name="payment_method" value="credit_card" id="credit_card" required>
+                                                                <label for="credit_card">Credit Card</label>
+                                                                <input type="radio" name="payment_method" value="debit_card" id="debit_card" required>
+                                                                <label for="debit_card">Debit Card</label>
+                                                                <input type="radio" name="payment_method" value="paypal" id="paypal" required>
+                                                                <label for="paypal">PayPal</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="form-check mb-3">
-                                                        {{ form.agreed_to_terms }}
-                                                        <label for="id_agreed_to_terms" class="form-check-label">
-                                                            I agree to the terms and conditions.
-                                                        </label>
+                                                <div class="payment-method-fields">
+                                                    <!-- Payment Method Fields (Credit Card, Debit Card, PayPal) -->
+
+                                                    <div id="paypal-fields" style="display:none;">
+                                                        <label for="paypal-email">PayPal Email</label>
+                                                        <input type="email" id="paypal-email" name="paypal_email" class="form-control" placeholder="Enter PayPal Email" required>
+                                                        <small>Sign in to your PayPal account to proceed</small>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="text-center mt-3">
-                                                <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
-                                            </div>
-                                        </form>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="form-check mb-3">
+                                                            {{ form.agreed_to_terms }}
+                                                            <label for="id_agreed_to_terms" class="form-check-label">
+                                                                I agree to the terms and conditions.
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-center mt-3">
+                                                    <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart Section (on the right) -->
+                    <div class="col-md-4">
+                        <div class="card p-3 shadow-sm">
+                            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-primary">Your cart</span>
+                                <span class="badge bg-primary rounded-pill">{{ cart|length }}</span>
+                            </h4>
+                            <ul class="list-group mb-3">
+                                {% for item in cart %}
+                                <li class="list-group-item d-flex justify-content-between lh-sm">
+                                    <div>
+                                        <img src="{% if item.image %}{% static item.image %}{% else %}https://via.placeholder.com/120{% endif %}" alt="{{ item.name }}" style="max-width: 70px; height: auto;">
+                                        <h6 class="my-0">{{ item.name }}</h6>
+                                    </div>
+                                    <span class="text-body-secondary">x{{ item.quantity }}</span>
+                                    <strong>Total: ${{ item.total }}</strong>
+                                </li>
+                                {% endfor %}
+                            </ul>
+
+                            <!-- Total Amount -->
+                            <h4 class="d-flex justify-content-between">
+                                <span>Total (USD)</span>
+                                <strong>${{ total_amount }}</strong>
+                            </h4>
                         </div>
                     </div>
                 </div>
@@ -224,15 +259,26 @@
         </div>
     </form>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+
     <script>
-        document.getElementById('id_payment_method').addEventListener('change', function() {
-            var paymentMethod = this.value;
-            document.getElementById('credit-card-fields').style.display = paymentMethod === 'credit' ? 'block' : 'none';
+        // Toggle payment fields based on selected method
+        document.querySelectorAll('input[name="payment_method"]').forEach(function (element) {
+            element.addEventListener('change', function (event) {
+                var paymentMethod = event.target.value;
+
+                // Hide all payment method fields initially
+                document.getElementById('paypal-fields').style.display = 'none';
+
+                // Show the selected payment method fields
+                if (paymentMethod === 'paypal') {
+                    document.getElementById('paypal-fields').style.display = 'block';
+                }
+            });
         });
     </script>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
