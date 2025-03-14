@@ -39,9 +39,8 @@ urlpatterns = [
     path('gallery/', view.gallery, name='gallery'),
     path('contact/', view.contact, name='contact'),
     path('checkout/', view.checkout, name='checkout'),
+    path('api/orders/', view.create_order, name='create_order'),
     path('thankyou/', view.thankyou, name='thankyou'),
-    path('order/', view.order, name='order'),
-
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

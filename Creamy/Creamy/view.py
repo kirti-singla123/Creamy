@@ -10,6 +10,8 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 import json
 import stripe
+from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
 import re
 from django.http import HttpResponse
 
@@ -235,6 +237,9 @@ def checkout(request):
             # Clear the cart after order creation
             request.session['cart'] = {}
 
+            # Send the order confirmation email
+            send_order_confirmation(order)
+
             # Redirect to a thank you page after successful order
             return redirect('thankyou')  # Adjust this URL as needed
 
@@ -285,66 +290,57 @@ def contact(request):
 
     return render(request, 'contact.html')
 
-def order(request):
+
+@csrf_exempt
+def create_order(request):
     if request.method == 'POST':
-        print("POST request received")  # Debugging output
-        form = OrderForm(request.POST)
+        try:
+            # Parse the JSON body
+            data = json.loads(request.body)
 
-        if form.is_valid():
-            # Create the order instance without saving it yet
-            order = form.save(commit=False)
+            # Extract the cart from the request body
+            cart = data.get('cart', {})
 
-            # Retrieve the cart data from session
-            cart = get_cart(request)
+            # If the cart is empty, return an error
+            if not cart:
+                return JsonResponse({"error": "Cart is empty"}, status=400)
 
-            if not cart:  # If the cart is empty, prevent order creation
-                print("Cart is empty, cannot proceed with order")
-                return redirect('cart')  # Redirect the user back to the cart
+            # Create a new order object without saving it yet
+            order = Order()
 
-            # Calculate the total amount for the order
+            # Calculate the total amount
             total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
-            order.total_amount = total_amount  # Set the total amount
+            order.total_amount = total_amount
 
-            # Save the order
+            # Save the order to generate an ID before adding products
             order.save()
 
-            # Add products from the cart to the order
+            # Add products to the order
             for item in cart.values():
-                product = Product.objects.get(id=item['product_id'])
-                order.products.add(product)
+                try:
+                    # Ensure that the item is a valid product and exists
+                    product = Product.objects.get(id=item['product_id'])
+                    order.products.add(product)  # Adding the product to the ManyToMany relationship
+                except Product.DoesNotExist:
+                    return JsonResponse({"error": f"Product with ID {item['product_id']} not found"}, status=400)
 
-            # Optionally, store cart data in the order model (if you need it for later reference)
-            order.cart_data = json.dumps(cart)  # Save the cart data as a JSON string
+            # After adding products, save the order again
             order.save()
 
-            # Clear the cart after the order is placed
+            # Optionally save the cart data as JSON for future reference
+            order.save_cart_data(cart)
+
+            # Clear the cart from the session after order is created
             request.session['cart'] = {}
 
-            print("Order saved:", order)  # Debugging output
+            # Return the order ID in the response
+            return JsonResponse({"order_id": order.id}, status=201)
 
-            # Redirect to the 'thankyou' page
-            return redirect('thankyou')  # Use Django's URL reverse system to redirect
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
-        else:
-            print("Form errors:", form.errors)  # Debugging output for form validation errors
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
-    else:
-        print("GET request received")  # Debugging output for GET request
-
-        # If GET, initialize the form
-        form = OrderForm()
-
-    # Retrieve the cart data (for displaying in the checkout page)
-    cart = get_cart(request)
-    cart_items_with_total = []
-    total_amount = 0
-    for item in cart.values():
-        item_total = item['price'] * item['quantity']
-        total_amount += item_total
-        cart_items_with_total.append({**item, 'total': item_total})
-
-    return render(request, 'checkout.html', {
-        'form': form,
-        'cart': cart_items_with_total,
-        'total_amount': total_amount
-    })
+    # If not a POST request, return a method not allowed error
+    return JsonResponse({"error": "Method not allowed"}, status=405)

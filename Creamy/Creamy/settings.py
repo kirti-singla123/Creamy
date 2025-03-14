@@ -124,3 +124,15 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STRIPE_SECRET_KEY = 'sk_test_51Qwb5iQC5qCrN2bpLFxEgBv8QQGfYPbUvns0SzWUryGCkY0EERl48lJJ3175JaNIHIj9XDUKd3OqWDWNfrwbitMy00JBbVFZzS'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'thecreamyvibe@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'Saibaba@123'  # Your email password
+DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # From address for the emails
+
+
+APPEND_SLASH = False

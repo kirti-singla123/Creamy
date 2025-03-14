@@ -1,5 +1,6 @@
 from django.db import models
 import json
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 # Create your models here.
@@ -23,6 +24,7 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
+
 
 # Define choices outside the model for readability
 COUNTRY_CHOICES = [
@@ -53,20 +55,22 @@ ORDER_STATUS_CHOICES = [
     ('delivered', 'Delivered'),
     ('cancelled', 'Cancelled'),
 ]
+
+
 class Order(models.Model):
     # Delivery Info
-    full_name = models.CharField(max_length=100, default=" ")
-    email_address = models.EmailField(max_length=255, default=" ")
-    phone_number = models.CharField(max_length=15, default=" ")
-    address = models.CharField(max_length=255, default=" ")
+    full_name = models.CharField(max_length=100, blank=True, null=True)
+    email_address = models.EmailField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
 
     # Country Choices
-    country = models.CharField(max_length=100, choices=COUNTRY_CHOICES, default=" ")
+    country = models.CharField(max_length=100, choices=COUNTRY_CHOICES, blank=True, null=True)
 
     # State Choices
-    state = models.CharField(max_length=2, choices=STATE_CHOICES, default=" ")
+    state = models.CharField(max_length=2, choices=STATE_CHOICES, blank=True, null=True)
 
-    zip_code = models.CharField(max_length=20, default="")
+    zip_code = models.CharField(max_length=20, blank=True, null=True)
 
     # Payment Info
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='credit')
@@ -99,14 +103,42 @@ class Order(models.Model):
     order_status = models.CharField(max_length=10, choices=ORDER_STATUS_CHOICES, default='pending')
 
     # Many-to-Many relationship with Product model
-    products = models.ManyToManyField(Product, related_name='orders', blank=True)
+    products = models.ManyToManyField('Product', related_name='orders', blank=True)
 
     # New cart_data field to store cart items as JSON
-    cart_data = models.TextField(max_length=1000, null=True, blank=True)  # This will store the cart items (product IDs, quantities, etc.)
+    cart_data = models.TextField(max_length=1000, null=True,
+                                 blank=True)  # This will store the cart items (product IDs, quantities, etc.)
 
     def __str__(self):
         return f"Order {self.id} - {self.full_name}"
 
     # Method to save cart data as JSON string
     def save_cart_data(self, cart_data):
-        self.cart_data = json.dumps(cart_data)
+        try:
+            self.cart_data = json.dumps(cart_data)
+        except (TypeError, ValueError) as e:
+            raise ValidationError(f"Invalid cart data: {str(e)}")
+
+    # Custom validation for payment method fields
+    def clean(self):
+        # Check that only the relevant payment fields are populated
+        if self.payment_method == 'paypal' and not self.paypal_email:
+            raise ValidationError("PayPal email is required for PayPal payment.")
+
+        if self.payment_method == 'credit' and not all([self.cc_name, self.cc_number, self.cc_expiration, self.cc_cvv]):
+            raise ValidationError("Credit card details are required for credit card payments.")
+
+        if self.payment_method == 'debit' and not all(
+                [self.debit_name, self.debit_number, self.debit_expiration, self.debit_cvv]):
+            raise ValidationError("Debit card details are required for debit card payments.")
+
+        # If the payment method is not valid, raise an error
+        if self.payment_method not in dict(PAYMENT_CHOICES):
+            raise ValidationError("Invalid payment method selected.")
+
+        super().clean()
+
+    # Override the save method to ensure custom validation is run
+    def save(self, *args, **kwargs):
+        self.clean()  # Run custom validation
+        super().save(*args, **kwargs)
