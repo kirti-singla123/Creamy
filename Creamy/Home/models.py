@@ -8,7 +8,7 @@ from django.utils import timezone
 
 class Product(models.Model):
     name = models.CharField(max_length=150)
-    price = models.DecimalField(max_digits=10, decimal_places=0)
+    price = models.FloatField()
     image = models.ImageField()
 
     def __str__(self):
@@ -43,11 +43,6 @@ STATE_CHOICES = [
     ('IL', 'Illinois'),
 ]
 
-PAYMENT_CHOICES = [
-    ('credit', 'Credit Card'),
-    ('debit', 'Debit Card'),
-    ('paypal', 'PayPal'),
-]
 
 ORDER_STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -55,7 +50,6 @@ ORDER_STATUS_CHOICES = [
     ('delivered', 'Delivered'),
     ('cancelled', 'Cancelled'),
 ]
-
 
 class Order(models.Model):
     # Delivery Info
@@ -72,30 +66,12 @@ class Order(models.Model):
 
     zip_code = models.CharField(max_length=20, blank=True, null=True)
 
-    # Payment Info
-    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='credit')
-
-    # Credit Card Fields
-    cc_name = models.CharField(max_length=100, blank=True, null=True)
-    cc_number = models.CharField(max_length=20, blank=True, null=True)
-    cc_expiration = models.CharField(max_length=5, blank=True, null=True)  # MM/YY
-    cc_cvv = models.CharField(max_length=4, blank=True, null=True)
-
-    # PayPal Fields
-    paypal_email = models.EmailField(blank=True, null=True)
-
-    # Debit Card Fields
-    debit_name = models.CharField(max_length=100, blank=True, null=True)
-    debit_number = models.CharField(max_length=20, blank=True, null=True)
-    debit_expiration = models.CharField(max_length=5, blank=True, null=True)  # MM/YY
-    debit_cvv = models.CharField(max_length=4, blank=True, null=True)
-
     # Miscellaneous
     same_address = models.BooleanField(default=False)
     save_info = models.BooleanField(default=False)
     agreed_to_terms = models.BooleanField(default=False)
 
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_amount = models.FloatField(default=0.00)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -105,9 +81,8 @@ class Order(models.Model):
     # Many-to-Many relationship with Product model
     products = models.ManyToManyField('Product', related_name='orders', blank=True)
 
-    # New cart_data field to store cart items as JSON
-    cart_data = models.TextField(max_length=1000, null=True,
-                                 blank=True)  # This will store the cart items (product IDs, quantities, etc.)
+    # New cart_data field to store cart items as JSON (Updated to JSONField if you're using Django 3.1+)
+    cart_data = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"Order {self.id} - {self.full_name}"
@@ -115,30 +90,30 @@ class Order(models.Model):
     # Method to save cart data as JSON string
     def save_cart_data(self, cart_data):
         try:
-            self.cart_data = json.dumps(cart_data)
+            self.cart_data = cart_data
         except (TypeError, ValueError) as e:
             raise ValidationError(f"Invalid cart data: {str(e)}")
 
-    # Custom validation for payment method fields
-    def clean(self):
-        # Check that only the relevant payment fields are populated
-        if self.payment_method == 'paypal' and not self.paypal_email:
-            raise ValidationError("PayPal email is required for PayPal payment.")
-
-        if self.payment_method == 'credit' and not all([self.cc_name, self.cc_number, self.cc_expiration, self.cc_cvv]):
-            raise ValidationError("Credit card details are required for credit card payments.")
-
-        if self.payment_method == 'debit' and not all(
-                [self.debit_name, self.debit_number, self.debit_expiration, self.debit_cvv]):
-            raise ValidationError("Debit card details are required for debit card payments.")
-
-        # If the payment method is not valid, raise an error
-        if self.payment_method not in dict(PAYMENT_CHOICES):
-            raise ValidationError("Invalid payment method selected.")
-
-        super().clean()
-
     # Override the save method to ensure custom validation is run
     def save(self, *args, **kwargs):
-        self.clean()  # Run custom validation
+        self.calculate_total_amount()
         super().save(*args, **kwargs)
+
+    # Method to dynamically calculate total amount based on cart
+    def calculate_total_amount(self):
+        total = 0
+        cart_data = self.cart_data if self.cart_data else []
+
+        # Fetch all products at once to avoid multiple database hits
+        product_ids = [item['id'] for item in cart_data]  # Changed 'product_id' to 'id'
+        products = Product.objects.filter(id__in=product_ids)
+
+        product_dict = {product.id: product for product in products}
+
+        for item in cart_data:
+            product = product_dict.get(item['id'])  # Changed 'product_id' to 'id'
+            if product:
+                total += product.price * item['quantity']
+
+        self.total_amount = total
+        self.save()

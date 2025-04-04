@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "Home.apps.HomeConfig",
+    "rest_framework",
 
 ]
 
@@ -56,7 +57,7 @@ ROOT_URLCONF = "Creamy.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR /'templates'],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -123,7 +124,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-STRIPE_SECRET_KEY = 'sk_test_51Qwb5iQC5qCrN2bpLFxEgBv8QQGfYPbUvns0SzWUryGCkY0EERl48lJJ3175JaNIHIj9XDUKd3OqWDWNfrwbitMy00JBbVFZzS'
+STRIPE_SECRET_KEY = \
+    'sk_test_51Qwb5iQC5qCrN2bpLFxEgBv8QQGfYPbUvns0SzWUryGCkY0EERl48lJJ3175JaNIHIj9XDUKd3OqWDWNfrwbitMy00JBbVFZzS'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -136,3 +138,20 @@ DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # From address for the emails
 
 
 APPEND_SLASH = False
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # Ensures responses are returned as JSON
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',  # Ensures request body is parsed as JSON
+    ],
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # This stores sessions in the database
+
+# The name of the cookie to store session ID in the browser
+SESSION_COOKIE_NAME = 'sessionid'
+
+# (Optional) Expiration time for the session cookie in seconds (default is until the browser is closed)
+SESSION_COOKIE_AGE = 3600  # 1 hour

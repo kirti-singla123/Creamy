@@ -1,0 +1,2 @@
+2025-04-03 23:38:38,367 - INFO - Validated data: {'products': [{'product_id': <Product: Chocolate Ice Cream>, 'quantity': 1, 'total': 1.0, 'name': 'Chocolate Ice Cream', 'price': 1.0, 'image': '/product-1.jpg'}]}
+2025-04-03 23:43:16,826 - INFO - Validated data: {'products': [{'product_id': <Product: Chocolate Ice Cream>, 'quantity': 1, 'total': 1.0, 'name': 'Chocolate Ice Cream', 'price': 1.0, 'image': '/product-1.jpg'}]}

@@ -6,13 +6,13 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 Examples:
 Function views
     1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+    2. Add a URL to urlpatterns:  path('', views. home, name='home')
 Class-based views
     1. Add an import:  from other_app.views import Home
     2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls')
 """
 from django.contrib import admin
 from django.urls import path
@@ -39,7 +39,11 @@ urlpatterns = [
     path('gallery/', view.gallery, name='gallery'),
     path('contact/', view.contact, name='contact'),
     path('checkout/', view.checkout, name='checkout'),
-    path('api/orders/', view.create_order, name='create_order'),
+    path('api/orders/', view.get_orders, name='get_orders'),  # GET all orders
+    path('api/orders/<int:order_id>/', view.get_order, name='get_order'),  # GET a specific order
+    path('api/orders/create/', view.create_order, name='create_order'),  # POST create order
+    path('api/orders/update/<int:order_id>/', view.update_order, name='update_order'),  # PUT update order
+    path('api/orders/delete/<int:order_id>/', view.delete_order, name='delete_order'),  # DELETE delete order
     path('thankyou/', view.thankyou, name='thankyou'),
 ]
 

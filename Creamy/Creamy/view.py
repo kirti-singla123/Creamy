@@ -5,7 +5,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from datetime import datetime
 from django.http import JsonResponse
-from Home.forms import OrderForm
 from django.http import HttpResponseRedirect
 from django.conf import settings
 import json
@@ -14,9 +13,17 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 import re
 from django.http import HttpResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from Home.serializers import OrderSerializer
+from Home.models import COUNTRY_CHOICES, STATE_CHOICES  # Import the choices from models.py
+from django.views.decorators.csrf import csrf_exempt
+
 
 # Set your Stripe API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
 
 # View for Login
 def login_view(request):
@@ -35,11 +42,14 @@ def login_view(request):
 # Function to check password strength
 def is_strong_password(password):
     # Add your password strength checking logic here
-    return len(password) >= 8 and any(char.isdigit() for char in password) and any(char in '!@#$%^&*()_+' for char in password)
+    return (len(password) >= 8 and any(char.isdigit() for char in password)
+            and any(char in '!@#$%^&*()_+' for char in password))
+
 
 # Function to check if password is too similar to username or email
 def is_password_similar(username, password, confirm_password):
     return username.lower() in password.lower() or password.lower() == confirm_password.lower()
+
 
 # View for Sign Up
 def signup_view(request):
@@ -55,7 +65,7 @@ def signup_view(request):
             # Check if password is strong enough
             if not is_strong_password(password):
                 form.add_error('password1',
-                               "Password is too weak. It should have at least 8 characters, a number, and a special character.")
+                "Password is too weak. It should have at least 8 characters, a number, and a special character.")
 
             # Check if password and confirm password match
             elif password != confirm_password:
@@ -81,23 +91,29 @@ def signup_view(request):
 
     return render(request, 'signup.html', {'form': form})
 
+
 def logout_view(request):
     logout(request)
     return redirect('home')  # Redirect to the homepage after logout
 
+
 def home(request):
     return render(request, 'home.html')
 
+
 def about(request):
     return render(request, 'about.html')
+
 
 def product_list(request):
     products = Product.objects.all()
     return render(request, 'product.html', {'products': products})
 
+
 # Helper function to get the cart
 def get_cart(request):
     return request.session.get('cart', {})
+
 
 # Add to Cart view
 def add_to_cart(request, product_id):
@@ -130,6 +146,8 @@ def add_to_cart(request, product_id):
     # Redirect to the cart page
     return redirect('cart')
 
+
+
 # Cart view
 def cart(request):
     cart = get_cart(request)  # Get the cart from the session
@@ -148,19 +166,44 @@ def cart(request):
         # Check if 'product_id' exists in the item
         if 'product_id' in item:
             # Fetch the product details from the Product model
-            product = Product.objects.get(id=item['product_id'])  # Get product by ID
-            item['product'] = product  # Add the full product object to the item
-            products_in_cart.append(item)  # Append this item to the products_in_cart list
+            try:
+                product = Product.objects.get(id=item['product_id'])  # Get product by ID
+                # Add the full product object to the item
+                item['product'] = product
+                item['total'] = product.price * item['quantity']  # Calculate total price for this item
+                products_in_cart.append(item)  # Append this item to the products_in_cart list
+            except Product.DoesNotExist:
+                print(f"Error: Product with ID {item['product_id']} not found.")
         else:
             # If 'product_id' is missing, print a warning
             print(f"Warning: 'product_id' not found in item: {item}")
+
+    # Prepare the cart data in JSON format for JavaScript
+    cart_data = {
+        product_id: {
+            'product_id': product_id,
+            'name': item['product'].name if 'product' in item else '',
+            'price': item['product'].price if 'product' in item else 0,
+            'quantity': item['quantity'],
+            'total': item.get('total', 0),
+            'image': item['product'].image.url if 'product' in item and item['product'].image else ''
+        }
+        for product_id, item in cart.items()
+    }
+
+    # Serialize the cart data into JSON
+    cart_json = json.dumps(cart_data)
+
+    # Debugging: Log the serialized cart JSON
+    print("Serialized cart JSON:", cart_json)
 
     # Render the cart page with the cart data and total price
     return render(request, 'cart.html', {
         'cart': cart,
         'total_price': total_price,
-        'products_in_cart': products_in_cart
+        'cart_json': cart_json  # Pass serialized cart data to template
     })
+
 
 # Remove from Cart view
 def remove_from_cart(request, product_id):
@@ -175,6 +218,7 @@ def remove_from_cart(request, product_id):
 
     # Redirect to the cart page
     return redirect('cart')
+
 
 # Decrease quantity view
 def decrease_quantity(request, product_id):
@@ -213,67 +257,117 @@ def increase_quantity(request, product_id):
 
 def checkout(request):
     if request.method == 'POST':
-        form = OrderForm(request.POST)
+        # Retrieve the cart from the session
+        cart = get_cart(request)
 
-        if form.is_valid():
-            # Create the order instance but don't save it yet
-            order = form.save(commit=False)
+        print("Cart contents:", cart)  # This will print the contents of the cart
 
-            # Retrieve the cart from the session
-            cart = get_cart(request)
+        if not isinstance(cart, dict):
+            cart = {}  # Reset to an empty dictionary if it's not a dict
 
-            # Calculate the total amount from cart items
-            total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
-            order.total_amount = total_amount  # Set total amount for the order
+        if not cart:
+            cart_json = "[]"  # Empty JSON array if no cart items exist
+        else:
+            # Step 3: Convert cart dictionary to JSON string
+            cart_json = json.dumps(cart)  # Properly convert the cart into a JSON string
 
-            # Save the order to the database
-            order.save()
+        # Calculate the total amount from cart items
+        total_amount = sum(float(item['price']) * int(item['quantity']) for item in cart.values())
 
-            # Add the products from the cart to the order
+        # Parse the data from the AJAX POST request (via JSON)
+        try:
+            data = json.loads(request.body)  # This should be the data from the frontend's submitShippingInfo() function
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+        try:
+            # Create an order instance
+            order = Order.objects.create(
+                user=request.user,  # Assuming user is logged in
+                total_amount=total_amount,
+                shipping_full_name=data['full_name'],
+                shipping_email_address=data['email_address'],
+                shipping_phone_number=data['phone_number'],
+                shipping_address=data['address'],
+                shipping_country=data['country'],
+                shipping_state=data['state'],
+                shipping_zip_code=data['zip_code'],
+                agreed_to_terms=data['agreed_to_terms'],
+            )
+
+            # Add products from cart to the order
             for item in cart.values():
                 product = Product.objects.get(id=item['product_id'])
                 order.products.add(product)
 
-            # Clear the cart after order creation
+            # Clear the cart after saving the order
             request.session['cart'] = {}
 
-            # Send the order confirmation email
+            # Optionally, send a confirmation email or any other post-order action
             send_order_confirmation(order)
 
-            # Redirect to a thank you page after successful order
-            return redirect('thankyou')  # Adjust this URL as needed
+            # Return a success response
+            return JsonResponse({'message': 'Order saved successfully!'}, status=200)
+
+        except KeyError as e:
+            # Handle missing fields in the incoming data
+            return JsonResponse({'error': f'Missing required field: {str(e)}'}, status=400)
+        except Product.DoesNotExist:
+            # Handle missing product IDs
+            return JsonResponse({'error': 'Product not found in cart'}, status=400)
+        except Exception as e:
+            # Catch any other general errors
+            return JsonResponse({'error': f'Error occurred: {str(e)}'}, status=500)
 
     else:
-        # Initialize an empty form for the GET request (initial checkout page load)
-        form = OrderForm()
+        # For GET request (initial checkout page load)
+        cart = get_cart(request)
+        cart_items_with_total = []
+        total_amount = 0
 
-    # Retrieve the cart data from session (if any)
-    cart = get_cart(request)  # This will return a dictionary of cart items
+        # Calculate the total price for each cart item and overall total
+        for item in cart.values():
+            item_total = float(item['price']) * int(item['quantity'])  # Ensure proper type conversion
+            total_amount += item_total
+            cart_items_with_total.append({**item, 'total': item_total})
 
-    # Calculate total price for each cart item and the overall total amount
-    cart_items_with_total = []
-    total_amount = 0
-    for item in cart.values():
-        item_total = item['price'] * item['quantity']
-        total_amount += item_total
-        cart_items_with_total.append({**item, 'total': item_total})
+        # Ensure cart_json is set for rendering the template
+        cart_json = json.dumps(cart) if cart else "[]"  # Convert cart to JSON or empty JSON array
 
-    # Render the checkout page, passing the form, cart items with total, and total amount
-    return render(request, 'checkout.html', {'form': form, 'cart': cart_items_with_total, 'total_amount': total_amount})
+        # Pass the country and state choices to the template
+        return render(request, 'checkout.html', {
+            'cart_json': cart_json,  # Pass the JSON string to the template
+            'cart': cart_items_with_total,
+            'total_amount': total_amount,
+            'COUNTRY_CHOICES': COUNTRY_CHOICES,
+            'STATE_CHOICES': STATE_CHOICES,
+        })
 
 
 def thankyou(request):
-    # Get the most recent order
-    order = Order.objects.latest('created_at')  # Fetch the latest order by creation date
+    order_id = request.session.get('order_id')  # Get order_id from session
 
-    # Pass the order to the 'thankyou.html' template
+    if not order_id:
+        # Handle the case where order_id is not found in session
+        return render(request, 'thankyou.html', {'error': 'Order ID is missing or invalid.'})
+
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        # If order doesn't exist, show an error message or display a default "thank you" page
+        return render(request, 'thankyou.html', {'error': 'Order not found.'})
+
     return render(request, 'thankyou.html', {'order': order})
+
+
 
 def service(request):
     return render(request, 'service.html')
 
+
 def gallery(request):
     return render(request, 'gallery.html')
+
 
 def contact(request):
     if request.method == "POST":
@@ -291,56 +385,97 @@ def contact(request):
     return render(request, 'contact.html')
 
 
-@csrf_exempt
+# GET: Fetch all orders
+@api_view(['GET'])
+def get_orders(request):
+    orders = Order.objects.all()
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
+
+
+# GET: Fetch a single order by ID
+@api_view(['GET'])
+def get_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    serializer = OrderSerializer(order)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
 def create_order(request):
-    if request.method == 'POST':
+
+    print("Incoming request data:", request.data)  # Debugging incoming request data
+
+    # Retrieve the cart (products) data from the request
+    cart = request.data.get('cart_data', [])  # List of products coming from the request
+
+    # Ensure the cart is not empty
+    if not cart:
+        return Response({"detail": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Prepare the order data and calculate the total amount
+    total_amount = sum(item['total'] for item in cart)  # Sum up the 'total' from cart data
+
+    order_data = {
+        'total_amount': total_amount,
+        'order_status': 'pending'  # Set default order status to 'pending'
+    }
+
+    # Include shipping address if present in the request
+    if 'shipping_address' in request.data:
+        shipping_address = request.data['shipping_address']
+        order_data.update({
+            'full_name': shipping_address.get('full_name'),
+            'email_address': shipping_address.get('email_address'),
+            'phone_number': shipping_address.get('phone_number'),
+            'address': shipping_address.get('address'),
+            'country': shipping_address.get('country'),
+            'state': shipping_address.get('state'),
+            'zip_code': shipping_address.get('zip_code'),
+        })
+
+    # Serialize the order data
+    serializer = OrderSerializer(data=order_data)
+
+    # Log serializer validation errors (if any)
+    if not serializer.is_valid():
+        print("Serializer errors:", serializer.errors)  # Debugging serializer validation errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Save the order to the database
+    order = serializer.save()
+
+    # Add the detailed products to the order
+    for item in cart:
         try:
-            # Parse the JSON body
-            data = json.loads(request.body)
+            # Retrieve product from the database using the provided product_id
+            product = Product.objects.get(id=item['product_id'])  # Use 'id' to fetch product from DB
+            order.products.add(product)  # Add the product to the order
+        except Product.DoesNotExist:
+            print(f"Product with ID {item['product_id']} not found.")  # Handle missing product
+            return Response({"detail": f"Product with ID {item['product_id']} not found."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Extract the cart from the request body
-            cart = data.get('cart', {})
+    # Store the order ID in the session for later retrieval (if needed)
+    request.session['order_id'] = order.id
 
-            # If the cart is empty, return an error
-            if not cart:
-                return JsonResponse({"error": "Cart is empty"}, status=400)
+    # Return the response with the serialized order data
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            # Create a new order object without saving it yet
-            order = Order()
 
-            # Calculate the total amount
-            total_amount = sum(item['price'] * item['quantity'] for item in cart.values())
-            order.total_amount = total_amount
+# PUT: Update an existing order by ID
+@api_view(['PUT'])
+def update_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    serializer = OrderSerializer(order, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            # Save the order to generate an ID before adding products
-            order.save()
 
-            # Add products to the order
-            for item in cart.values():
-                try:
-                    # Ensure that the item is a valid product and exists
-                    product = Product.objects.get(id=item['product_id'])
-                    order.products.add(product)  # Adding the product to the ManyToMany relationship
-                except Product.DoesNotExist:
-                    return JsonResponse({"error": f"Product with ID {item['product_id']} not found"}, status=400)
-
-            # After adding products, save the order again
-            order.save()
-
-            # Optionally save the cart data as JSON for future reference
-            order.save_cart_data(cart)
-
-            # Clear the cart from the session after order is created
-            request.session['cart'] = {}
-
-            # Return the order ID in the response
-            return JsonResponse({"order_id": order.id}, status=201)
-
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON format"}, status=400)
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    # If not a POST request, return a method not allowed error
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+# DELETE: Delete an order by ID
+@api_view(['DELETE'])
+def delete_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
