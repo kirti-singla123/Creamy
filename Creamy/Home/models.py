@@ -51,6 +51,7 @@ ORDER_STATUS_CHOICES = [
     ('cancelled', 'Cancelled'),
 ]
 
+
 class Order(models.Model):
     # Delivery Info
     full_name = models.CharField(max_length=100, blank=True, null=True)
@@ -81,23 +82,28 @@ class Order(models.Model):
     # Many-to-Many relationship with Product model
     products = models.ManyToManyField('Product', related_name='orders', blank=True)
 
-    # New cart_data field to store cart items as JSON (Updated to JSONField if you're using Django 3.1+)
+    # New cart_data field to store cart items as JSON
     cart_data = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"Order {self.id} - {self.full_name}"
 
-    # Method to save cart data as JSON string
     def save_cart_data(self, cart_data):
+        """Ensure that cart data is saved in JSON format."""
         try:
-            self.cart_data = cart_data
+            # Ensure cart_data is a valid JSON serializable structure
+            self.cart_data = json.dumps(cart_data)  # Convert to a JSON string
         except (TypeError, ValueError) as e:
             raise ValidationError(f"Invalid cart data: {str(e)}")
 
     # Override the save method to ensure custom validation is run
     def save(self, *args, **kwargs):
-        self.calculate_total_amount()
-        super().save(*args, **kwargs)
+
+        # Calculate the total amount before saving, avoiding recursion
+        if not self.total_amount:  # Only calculate if not already set
+            self.total_amount = self.calculate_total_amount()
+
+        super(Order, self).save(*args, **kwargs)  # Proceed with saving the order
 
     # Method to dynamically calculate total amount based on cart
     def calculate_total_amount(self):
@@ -105,15 +111,15 @@ class Order(models.Model):
         cart_data = self.cart_data if self.cart_data else []
 
         # Fetch all products at once to avoid multiple database hits
-        product_ids = [item['id'] for item in cart_data]  # Changed 'product_id' to 'id'
+        product_ids = [item['product_id'] for item in cart_data]  # Changed 'product_id' to 'id'
         products = Product.objects.filter(id__in=product_ids)
 
         product_dict = {product.id: product for product in products}
 
+        # Calculate the total by matching product_id from the cart_data
         for item in cart_data:
-            product = product_dict.get(item['id'])  # Changed 'product_id' to 'id'
+            product = product_dict.get(item['product_id'])  # Changed 'product_id' to 'id'
             if product:
                 total += product.price * item['quantity']
 
-        self.total_amount = total
-        self.save()
+        return total

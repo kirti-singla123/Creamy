@@ -10,10 +10,14 @@
     <meta content="Free HTML Templates" name="description">
 
     <!-- Favicon -->
+    <link rel="preload" href="/js/jquery-3.6.0.min.js" as="script">
+
     <link href="{% static 'img/favicon.ico' %}" rel="icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!--    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-B4gt1jrGC7Jh4AgR52b0X7oD8v5Lfpv5yZpr23Zjktq87P0X8tvS8w2I/POq0w60" crossorigin="anonymous">-->
+
+
+
 
     <!-- Google Web Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -377,23 +381,17 @@
     document.addEventListener('DOMContentLoaded', function () {
         // Extract the cart data from the script tag
         var cartData = document.getElementById('cart_data').textContent.trim();
-
-        // Log the raw cartData to see its content
-        console.log("Raw cart data from Django:", cartData);
+        console.log("Raw cart data from Django:", cartData);  // Log raw cart data
 
         // Check if cartData exists (not empty or malformed)
         if (cartData) {
             try {
                 // Parse the cart data string into a JavaScript object
                 var cart = JSON.parse(cartData);
-                console.log("Parsed cart data:", cart);
-
-                // Convert the cart object to an array (since it's not an array by default)
-                cart = Object.values(cart);
-                console.log("Cart converted to array:", cart);
-
+                console.log("Parsed cart data:", cart);  // Log parsed cart data
+                cart = Object.values(cart);  // Convert the cart object to an array
+                console.log("Cart converted to array:", cart);  // Log the array format of the cart
             } catch (e) {
-                // If JSON parsing fails, log the error
                 console.error('Error parsing cart data:', e);
                 var cart = [];  // Default to an empty array in case of error
             }
@@ -401,6 +399,9 @@
             console.error('No valid cart data available');
             var cart = [];  // Default to an empty cart array
         }
+
+        // Ensure `total_amount` is correctly rendered from Django template
+        console.log('Total Amount (from Django):', '{{ total_amount }}');  // Log the total amount value from Django
 
         // Handle PayPal button and API submission
         paypal.Buttons({
@@ -410,119 +411,146 @@
                 shape: 'pill',
             },
             createOrder: function(data, actions) {
-                console.log('Creating PayPal order with total value:', '{{ total_amount }}');
+                console.log('Creating PayPal order with total value:', '{{ total_amount }}');  // Log before creating order
+
+                // Check if total_amount is valid
+                if (!{{ total_amount }}) {
+                    console.error('Total amount is not valid or not rendered correctly!');
+                    return;
+                }
+
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '{{ total_amount }}'  // Replace with the dynamic order total (e.g., passed from Django)
+                            value: '{{ total_amount }}'
                         }
                     }]
                 });
             },
             onApprove: function(data, actions) {
-                console.log('PayPal payment approved:', data);
+                console.log('PayPal payment approved:', data);  // Log approval data from PayPal
                 return actions.order.capture().then(function(details) {
                     alert('Congratulations! Your order is placed successfully, ' + details.payer.name.given_name);
-
-                    // Now that payment is successful, create the order in the backend
                     createOrder();  // Call createOrder function after PayPal payment
                 });
             },
             onError: function(err) {
-                console.error('Error in PayPal button:', err);
+                console.error('Error in PayPal button:', err);  // Log any error during PayPal process
             }
         }).render('#paypal-button-container');
 
         // Function to create the order after PayPal payment
         function createOrder() {
-            console.log('createOrder function called');
+            console.log('createOrder function called');  // Log when the function is called
 
-            // Prepare the products data to send in the request
             var cartDataFormatted = cart.map(item => {
-                console.log("Processing cart item:", item);
+                console.log("Processing cart item:", item);  // Log each item in the cart during formatting
                 return {
-                    product_id: item.product_id,  // The unique ID of the product
-                    quantity: item.quantity,  // Quantity of the product
-                    total: item.price * item.quantity,  // Total price of the product
-                    name: item.name,  // Product name
-                    price: item.price,  // Price of the product
-                    image: item.image  // Product image
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image
                 };
             });
-            console.log("Prepared cart data:", cartDataFormatted);
 
-            var orderData = {
-                shipping_address: {
-                    full_name: document.getElementById('full_name').value,
-                    email_address: document.getElementById('email_address').value,
-                    phone_number: document.getElementById('phone_number').value,
-                    address: document.getElementById('address').value,
-                    country: document.getElementById('country').value,
-                    state: document.getElementById('state').value,
-                    zip_code: document.getElementById('zip_code').value
-                },
-                cart_data: cartDataFormatted   // Send the full cart data as expected
-            };
+            console.log("Formatted Cart Data:", cartDataFormatted);  // Log the formatted cart data
 
-            console.log('Order data prepared:', orderData);
+            var selectedCountry = document.getElementById('country');
+            if (!selectedCountry) {
+                console.error('Country element not found!');
+                alert('Country field is missing!');
+                return;
+            }
+            var countryValue = selectedCountry.value;
+            console.log("Selected country:", countryValue);  // Log selected country value
 
-            // CSRF Token
-            var csrf_token = document.querySelector('[name=CsrfViewMiddleware]').value;
-            console.log('CSRF Token:',csrf_token);
+            if (!countryValue) {
+                alert('Please select a valid country.');
+                return;
+            }
 
-            // Validate the form data
-            if (!orderData.shipping_address.full_name || !orderData.shipping_address.email_address || !orderData.shipping_address.phone_number || !orderData.shipping_address.address || !orderData.shipping_address.country || !orderData.shipping_address.state || !orderData.shipping_address.zip_code) {
+            var fullNameElement = document.getElementById('full_name');
+            var emailElement = document.getElementById('email_address');
+            var phoneElement = document.getElementById('phone_number');
+            var addressElement = document.getElementById('address');
+            var stateElement = document.getElementById('state');
+            var zipCodeElement = document.getElementById('zip_code');
+
+            // Check if all required form fields are present
+            if (!fullNameElement || !emailElement || !phoneElement || !addressElement || !stateElement || !zipCodeElement) {
+                console.error('One or more required form fields are missing.');
                 alert('Please fill in all the required fields.');
                 return;
             }
 
-            // Make the AJAX request to create the order in the backend
+            // Prepare order data
+            var orderData = {
+                shipping_address: {
+                    full_name: fullNameElement.value,
+                    email_address: emailElement.value,
+                    phone_number: phoneElement.value,
+                    address: addressElement.value,
+                    country: countryValue,
+                    state: stateElement.value,
+                    zip_code: zipCodeElement.value
+                },
+                cart_data: cartDataFormatted
+            };
+
+            console.log('Order data prepared:', orderData);  // Log the prepared order data
+
+            var csrf_token = document.querySelector('[name=CsrfViewMiddleware]').value;
+            console.log('CSRF Token:', csrf_token);  // Log the CSRF token
+
             $.ajax({
-                url: 'http://127.0.0.1:8000/api/orders/create/',  // Your backend endpoint to create the order
+                url: 'http://127.0.0.1:8000/api/orders/create/',
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': csrf_token  // Add CSRF token for security
+                    'X-CSRFToken': csrf_token
                 },
-                data: JSON.stringify(orderData),  // Send the shipping and cart data as JSON
+                data: JSON.stringify(orderData),
                 contentType: 'application/json',
                 success: function(response) {
-                    console.log('Order created successfully:', response);
-                    updateOrderStatusToPaid(response.order_id);
+                    console.log('Order created successfully:', response);  // Log the successful order creation response
+                    updateOrderStatusToPaid(response.order_id);  // Update the order status to paid
                 },
-                error: function(error) {
-                    console.error('Error creating order:', error);
-                    console.log('Response:', error.responseText);  // Log the full response from the server
+                error: function(xhr, status, error) {
+                    console.error('Error creating order:', error);  // Log any error during order creation
+                    console.error('Response Text:', xhr.responseText);
+                    console.error('Status Code:', xhr.status);
+                    console.error('Response Headers:', xhr.getAllResponseHeaders());
                     alert('Error creating order. Please try again later.');
                 }
             });
         }
 
-        // Function to update order status to 'paid' after successful payment
         function updateOrderStatusToPaid(orderId) {
-            console.log('Updating order status to "paid" for order ID:', orderId);
-            var csrf_token = document.querySelector('[name=Csrfmiddlewaretoken]').value;
+            console.log('Updating order status to "paid" for order ID:', orderId);  // Log before updating the order status
+            var csrf_token = document.querySelector('[name=CsrfViewMiddleware]').value;
 
-            // Make the AJAX request to update order status in the backend
             $.ajax({
-                url: '/api/update_order_status/',  // Backend endpoint to update order status
+                url: '/api/update_order_status/',
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': csrf_token  // Add CSRF token for security
+                    'X-CSRFToken': csrf_token
                 },
-                data: JSON.stringify({ order_id: orderId, status: 'paid' }),  // Send order ID and new status
+                data: JSON.stringify({ order_id: orderId, status: 'paid' }),
                 contentType: 'application/json',
                 success: function(response) {
-                    console.log('Order status updated to "paid"');
-                    window.location.href = '/thankyou/';
+                    console.log('Order status updated to "paid"');  // Log the success message
+                    window.location.href = '/thankyou/';  // Redirect after successful payment
                 },
                 error: function(error) {
-                    console.error('Error updating order status:', error);
+                    console.error('Error updating order status:', error);  // Log any error during the order status update
                     alert('Error updating order status. Please try again later.');
                 }
             });
         }
     });
 </script>
+
+
 
 
 

@@ -64,8 +64,9 @@ def signup_view(request):
 
             # Check if password is strong enough
             if not is_strong_password(password):
-                form.add_error('password1',
-                "Password is too weak. It should have at least 8 characters, a number, and a special character.")
+                form.add_error(
+                    'password1',
+                    "Password is too weak. It should have at least 8 characters, a number, and a special character.")
 
             # Check if password and confirm password match
             elif password != confirm_password:
@@ -145,7 +146,6 @@ def add_to_cart(request, product_id):
 
     # Redirect to the cart page
     return redirect('cart')
-
 
 
 # Cart view
@@ -255,20 +255,22 @@ def increase_quantity(request, product_id):
     # Redirect back to the cart
     return redirect('cart')
 
+
 def checkout(request):
     if request.method == 'POST':
         # Retrieve the cart from the session
         cart = get_cart(request)
 
-        print("Cart contents:", cart)  # This will print the contents of the cart
+        # Debug print for cart contents
+        print("Cart contents:", cart)
 
         if not isinstance(cart, dict):
-            cart = {}  # Reset to an empty dictionary if it's not a dict
+            cart = {}  # Reset to an empty dictionary if cart is not a dict
 
         if not cart:
             cart_json = "[]"  # Empty JSON array if no cart items exist
         else:
-            # Step 3: Convert cart dictionary to JSON string
+            # Convert cart dictionary to JSON string
             cart_json = json.dumps(cart)  # Properly convert the cart into a JSON string
 
         # Calculate the total amount from cart items
@@ -276,7 +278,7 @@ def checkout(request):
 
         # Parse the data from the AJAX POST request (via JSON)
         try:
-            data = json.loads(request.body)  # This should be the data from the frontend's submitShippingInfo() function
+            data = json.loads(request.body)  # Data from frontend's submitShippingInfo() function
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid data format'}, status=400)
 
@@ -307,7 +309,10 @@ def checkout(request):
             send_order_confirmation(order)
 
             # Return a success response
-            return JsonResponse({'message': 'Order saved successfully!'}, status=200)
+            return JsonResponse({
+                'message': 'Order saved successfully!',
+                'cart_json': cart_json  # Include cart_json in the response
+            }, status=200)
 
         except KeyError as e:
             # Handle missing fields in the incoming data
@@ -360,7 +365,6 @@ def thankyou(request):
     return render(request, 'thankyou.html', {'order': order})
 
 
-
 def service(request):
     return render(request, 'service.html')
 
@@ -403,7 +407,6 @@ def get_order(request, order_id):
 
 @api_view(['POST'])
 def create_order(request):
-
     print("Incoming request data:", request.data)  # Debugging incoming request data
 
     # Retrieve the cart (products) data from the request
@@ -413,8 +416,23 @@ def create_order(request):
     if not cart:
         return Response({"detail": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Prepare the order data and calculate the total amount
-    total_amount = sum(item['total'] for item in cart)  # Sum up the 'total' from cart data
+    if not isinstance(cart, list):
+        return Response({"detail": "Invalid cart data format."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Calculate total amount (ensure 'total' is in cart data)
+    total_amount = 0
+    for item in cart:
+        if not isinstance(item, dict):  # Ensure each item is a dictionary
+            return Response({"detail": "Invalid item format in cart."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'total' not in item:
+            # If total isn't provided, calculate it
+            if 'quantity' not in item or 'price' not in item:
+                return Response({"detail": "Missing quantity or price in cart item."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            # If total isn't provided, calculate it
+            item['total'] = item['quantity'] * item['price']  # Calculate total if not provided
+        total_amount += item['total']
 
     order_data = {
         'total_amount': total_amount,
@@ -424,6 +442,25 @@ def create_order(request):
     # Include shipping address if present in the request
     if 'shipping_address' in request.data:
         shipping_address = request.data['shipping_address']
+
+        # Ensure required shipping fields are provided
+        required_fields = ['full_name', 'email_address', 'phone_number', 'address', 'country', 'state', 'zip_code']
+        missing_fields = [field for field in required_fields if field not in shipping_address]
+
+        if missing_fields:
+            return Response({"detail": f"Missing fields in shipping address: {', '.join(missing_fields)}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Optionally validate the country and state if they are from a predefined list of choices
+        valid_countries = ['USA', 'India', 'Canada']  # Example: Modify with actual valid country codes
+        valid_states = ['NY', 'CA', 'TX']  # Example: Modify with actual valid state codes
+
+        if shipping_address['country'] not in valid_countries:
+            return Response({"detail": "Invalid country."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if shipping_address['state'] not in valid_states:
+            return Response({"detail": "Invalid state."}, status=status.HTTP_400_BAD_REQUEST)
+
         order_data.update({
             'full_name': shipping_address.get('full_name'),
             'email_address': shipping_address.get('email_address'),
@@ -450,10 +487,11 @@ def create_order(request):
         try:
             # Retrieve product from the database using the provided product_id
             product = Product.objects.get(id=item['product_id'])  # Use 'id' to fetch product from DB
-            order.products.add(product)  # Add the product to the order
+            order.products.add(product)  # Add product to the order
         except Product.DoesNotExist:
             print(f"Product with ID {item['product_id']} not found.")  # Handle missing product
-            return Response({"detail": f"Product with ID {item['product_id']} not found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"Product with ID {item['product_id']} not found."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     # Store the order ID in the session for later retrieval (if needed)
     request.session['order_id'] = order.id
