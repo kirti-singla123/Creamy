@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from Home.models import Order, Product
+from django.core.exceptions import ValidationError
 
 
 # ProductOrderSerializer: This serializer handles each product's details in the order (within cart_data)
@@ -10,15 +11,18 @@ class ProductOrderSerializer(serializers.Serializer):
     price = serializers.FloatField(required=False)  # Optional, from Product
     image = serializers.CharField(max_length=255, required=False)  # Optional, from Product
 
-    def validate_total(self, value):
+    @staticmethod
+    def validate_total(value):
         """Ensure the total is greater than 0"""
         if value <= 0:
             raise serializers.ValidationError("Total amount must be greater than 0.")
         return value
 
-    def calculate_total(self, product, quantity):
+    @staticmethod
+    def calculate_total(product, quantity):
         """Calculate the total for the product based on its price and quantity"""
         return product.price * quantity
+
 
 # OrderSerializer: Handles the entire order creation logic, including cart data and total calculation
 class OrderSerializer(serializers.ModelSerializer):
@@ -41,13 +45,19 @@ class OrderSerializer(serializers.ModelSerializer):
             'total_amount',
             'created_at',
             'order_status',
-            'cart_data'  # List of cart items
+            'cart_data',
+
         ]
 
     def create(self, validated_data):
         """Override the create method to handle total calculation and save cart data."""
-        # Extract cart data
-        cart_data = validated_data.pop('cart_data')  # Remove cart data from validated data
+        print("Validated data:", validated_data)
+
+        # Extract cart data from the validated data
+        cart_data = validated_data.get('cart_data')  # Remove cart data from validated data
+
+        if not cart_data:
+            raise ValidationError("Cart data is missing or malformed.")
 
         # Create the Order instance (without cart_data for now)
         order = Order.objects.create(**validated_data)
@@ -63,8 +73,8 @@ class OrderSerializer(serializers.ModelSerializer):
             quantity = item['quantity']
             total = product.price * quantity  # Calculate total for this product
 
-            # Add the product to the order (many-to-many relationship)
-            order.products.add(product)  # Add product to the many-to-many relationship
+            # Add product to the order (many-to-many relationship)
+            order.products.add(product)  # Ensure `products` is a ManyToManyField on Order model
 
             # Accumulate total for the entire order
             total_amount += total
@@ -81,11 +91,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
         # Save the total amount to the order
         order.total_amount = total_amount
-        order.save()
 
-        # Save the cart data to the order (as a JSON serializable structure)
-        order.save_cart_data(serialized_cart_data)
-        order.save()  # Save the order with cart data
+        # If `Order` model has a JSONField for cart_data, save the serialized cart data
+        order.cart_data = serialized_cart_data  # Assuming 'cart_data' is a JSONField
+        order.save()  # Save the order once, after all updates are done
 
         return order
 
@@ -129,4 +138,3 @@ class OrderSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-

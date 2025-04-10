@@ -98,9 +98,16 @@ class Order(models.Model):
 
     # Override the save method to ensure custom validation is run
     def save(self, *args, **kwargs):
+        # Ensure cart_data is a valid structure before proceeding
+        if self.cart_data:
+            if not isinstance(self.cart_data, list):
+                raise ValidationError("Cart data must be a list.")
+            for item in self.cart_data:
+                if 'product_id' not in item or 'quantity' not in item:
+                    raise ValidationError("Each cart item must have 'product_id' and 'quantity'.")
 
-        # Calculate the total amount before saving, avoiding recursion
-        if not self.total_amount:  # Only calculate if not already set
+        # Recalculate total amount if cart_data has changed or if it's not already set
+        if self.cart_data:
             self.total_amount = self.calculate_total_amount()
 
         super(Order, self).save(*args, **kwargs)  # Proceed with saving the order
@@ -111,15 +118,16 @@ class Order(models.Model):
         cart_data = self.cart_data if self.cart_data else []
 
         # Fetch all products at once to avoid multiple database hits
-        product_ids = [item['product_id'] for item in cart_data]  # Changed 'product_id' to 'id'
+        product_ids = [item['product_id'].id for item in cart_data]  # Access the product's ID from the Product instance
         products = Product.objects.filter(id__in=product_ids)
 
+        # Create a dictionary of products keyed by their id for faster lookup
         product_dict = {product.id: product for product in products}
 
         # Calculate the total by matching product_id from the cart_data
         for item in cart_data:
-            product = product_dict.get(item['product_id'])  # Changed 'product_id' to 'id'
+            product = product_dict.get(item['product_id'].id)  # Ensure you use the product's ID
             if product:
-                total += product.price * item['quantity']
+                total += product.price * item['quantity']  # Multiply price by quantity for total calculation
 
         return total

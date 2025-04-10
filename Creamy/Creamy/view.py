@@ -191,9 +191,21 @@ def cart(request):
         for product_id, item in cart.items()
     }
 
-    # Serialize the cart data into JSON
-    cart_json = json.dumps(cart_data)
+    # Ensure that the cart_data is serializable
+    cart_data_serializable = {
+        product_id: {
+            'product_id': product_id,
+            'name': item['name'],
+            'price': item['price'],
+            'quantity': item['quantity'],
+            'total': item['total'],
+            'image': item['image']
+        }
+        for product_id, item in cart_data.items()
+    }
 
+    # Serialize the cart data into JSON
+    cart_json = json.dumps(cart_data_serializable)
     # Debugging: Log the serialized cart JSON
     print("Serialized cart JSON:", cart_json)
 
@@ -409,95 +421,75 @@ def get_order(request, order_id):
 def create_order(request):
     print("Incoming request data:", request.data)  # Debugging incoming request data
 
-    # Retrieve the cart (products) data from the request
-    cart = request.data.get('cart_data', [])  # List of products coming from the request
+    # Ensure 'cart_data' exists in the request data
+    if 'cart_data' not in request.data:
+        return Response({"detail": "Cart data is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Ensure the cart is not empty
-    if not cart:
+    # Extract cart_data and other order details
+    cart_data = request.data['cart_data']
+    total_amount = request.data.get('total_amount', 0)
+
+    # Validate that the cart_data is not empty
+    if not cart_data:
         return Response({"detail": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not isinstance(cart, list):
-        return Response({"detail": "Invalid cart data format."}, status=status.HTTP_400_BAD_REQUEST)
+    # Calculate the total amount from the cart_data if it's not provided
+    calculated_total = 0
+    processed_cart_data = []  # List to hold the processed data for the cart
 
-    # Calculate total amount (ensure 'total' is in cart data)
-    total_amount = 0
-    for item in cart:
-        if not isinstance(item, dict):  # Ensure each item is a dictionary
-            return Response({"detail": "Invalid item format in cart."}, status=status.HTTP_400_BAD_REQUEST)
+    for item in cart_data:
+        product_id = item.get('product_id')
+        quantity = item.get('quantity', 0)
 
-        if 'total' not in item:
-            # If total isn't provided, calculate it
-            if 'quantity' not in item or 'price' not in item:
-                return Response({"detail": "Missing quantity or price in cart item."},
-                                status=status.HTTP_400_BAD_REQUEST)
-            # If total isn't provided, calculate it
-            item['total'] = item['quantity'] * item['price']  # Calculate total if not provided
-        total_amount += item['total']
+        if not product_id or not quantity:
+            return Response({"detail": "Each item must have a valid product_id and quantity."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
+        # Fetch product details to calculate total (you may want to include price and quantity validation here)
+        try:
+            product = Product.objects.get(id=product_id)
+            product_details = {
+                'product_id': product.id,
+                'name': product.name,
+                'price': product.price,
+                'quantity': quantity,
+                'total': product.price * quantity,
+                'image': product.image.url if product.image else None
+            }
+            processed_cart_data.append(product_details)
+            calculated_total += product.price * quantity
+        except Product.DoesNotExist:
+            return Response({"detail": f"Product with ID {product_id} does not exist."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    # If the provided total_amount does not match the calculated total, return an error
+    if total_amount != calculated_total:
+        return Response({"detail": "Total amount does not match calculated cart total."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # Prepare data for the order
     order_data = {
+        'cart_data': processed_cart_data,  # Use the processed cart data (serializable data)
         'total_amount': total_amount,
-        'order_status': 'pending'  # Set default order status to 'pending'
+        'order_status': 'pending',  # Default status for new orders
     }
 
-    # Include shipping address if present in the request
+    # Include shipping address if available
     if 'shipping_address' in request.data:
-        shipping_address = request.data['shipping_address']
+        order_data.update(request.data['shipping_address'])
 
-        # Ensure required shipping fields are provided
-        required_fields = ['full_name', 'email_address', 'phone_number', 'address', 'country', 'state', 'zip_code']
-        missing_fields = [field for field in required_fields if field not in shipping_address]
-
-        if missing_fields:
-            return Response({"detail": f"Missing fields in shipping address: {', '.join(missing_fields)}"},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        # Optionally validate the country and state if they are from a predefined list of choices
-        valid_countries = ['USA', 'India', 'Canada']  # Example: Modify with actual valid country codes
-        valid_states = ['NY', 'CA', 'TX']  # Example: Modify with actual valid state codes
-
-        if shipping_address['country'] not in valid_countries:
-            return Response({"detail": "Invalid country."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if shipping_address['state'] not in valid_states:
-            return Response({"detail": "Invalid state."}, status=status.HTTP_400_BAD_REQUEST)
-
-        order_data.update({
-            'full_name': shipping_address.get('full_name'),
-            'email_address': shipping_address.get('email_address'),
-            'phone_number': shipping_address.get('phone_number'),
-            'address': shipping_address.get('address'),
-            'country': shipping_address.get('country'),
-            'state': shipping_address.get('state'),
-            'zip_code': shipping_address.get('zip_code'),
-        })
-
-    # Serialize the order data
+    # Now, create the serializer with the prepared order data
     serializer = OrderSerializer(data=order_data)
 
-    # Log serializer validation errors (if any)
-    if not serializer.is_valid():
-        print("Serializer errors:", serializer.errors)  # Debugging serializer validation errors
+    # Check if the serializer is valid
+    if serializer.is_valid():
+        order = serializer.save()
+
+        # Return the created order data as response
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        print("Serializer errors:", serializer.errors)  # Debugging serializer errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # Save the order to the database
-    order = serializer.save()
-
-    # Add the detailed products to the order
-    for item in cart:
-        try:
-            # Retrieve product from the database using the provided product_id
-            product = Product.objects.get(id=item['product_id'])  # Use 'id' to fetch product from DB
-            order.products.add(product)  # Add product to the order
-        except Product.DoesNotExist:
-            print(f"Product with ID {item['product_id']} not found.")  # Handle missing product
-            return Response({"detail": f"Product with ID {item['product_id']} not found."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-    # Store the order ID in the session for later retrieval (if needed)
-    request.session['order_id'] = order.id
-
-    # Return the response with the serialized order data
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # PUT: Update an existing order by ID
