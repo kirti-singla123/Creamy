@@ -1,30 +1,61 @@
 from rest_framework import serializers
 from Home.models import Order, Product
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+from decimal import Decimal  # Add this import
 
 
-# ProductOrderSerializer: This serializer handles each product's details in the order (within cart_data)
 class ProductOrderSerializer(serializers.Serializer):
-    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())  # Product reference
+    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
     quantity = serializers.IntegerField()
-    name = serializers.CharField(max_length=255, required=False)  # Optional, from Product
-    price = serializers.FloatField(required=False)  # Optional, from Product
-    image = serializers.CharField(max_length=255, required=False)  # Optional, from Product
 
-    @staticmethod
-    def validate_total(value):
-        """Ensure the total is greater than 0"""
-        if value <= 0:
-            raise serializers.ValidationError("Total amount must be greater than 0.")
-        return value
+    # Optional fields for display
+    name = serializers.CharField(max_length=255, required=False)
+    price = serializers.FloatField(required=False)
+    image = serializers.CharField(max_length=255, required=False)
+
+    def validate(self, data):
+        """Custom validation logic"""
+        product = data.get('product_id')
+        quantity = data.get('quantity')
+
+        if not product:
+            raise ValidationError("Product ID is required.")
+        if quantity is None or quantity <= 0:
+            raise ValidationError("Quantity must be greater than 0.")
+
+        return data
 
     @staticmethod
     def calculate_total(product, quantity):
         """Calculate the total for the product based on its price and quantity"""
         return product.price * quantity
 
+    def to_representation(self, instance):
+        """
+        Custom representation to avoid .pk errors.
+        """
+        product = instance.get('product_id')
+        quantity = instance.get('quantity')
 
-# OrderSerializer: Handles the entire order creation logic, including cart data and total calculation
+        if isinstance(product, Product):
+            return {
+                'product_id': product.id,
+                'name': product.name,
+                'price': float(product.price),
+                'quantity': quantity,
+                'image': product.image.url if hasattr(product, 'image') and product.image else ''
+            }
+        else:
+            # Fallback if not passed a full product
+            return {
+                'product_id': product,
+                'name': instance.get('name'),
+                'price': float(instance.get('price', 0)),
+                'quantity': quantity,
+                'image': instance.get('image', '')
+            }
+
 class OrderSerializer(serializers.ModelSerializer):
     cart_data = ProductOrderSerializer(many=True, required=True)
 
@@ -46,95 +77,54 @@ class OrderSerializer(serializers.ModelSerializer):
             'created_at',
             'order_status',
             'cart_data',
-
         ]
 
     def create(self, validated_data):
         """Override the create method to handle total calculation and save cart data."""
         print("Validated data:", validated_data)
 
-        # Extract cart data from the validated data
-        cart_data = validated_data.get('cart_data')  # Remove cart data from validated data
+        cart_data = validated_data.pop('cart_data', None)
 
         if not cart_data:
             raise ValidationError("Cart data is missing or malformed.")
 
-        # Create the Order instance (without cart_data for now)
+        # Create the Order instance
         order = Order.objects.create(**validated_data)
 
-        total_amount = 0  # Initialize total amount
-
-        # Prepare cart data with serializable product details
+        total_amount = Decimal('0.00')
         serialized_cart_data = []
 
-        # Calculate the total amount from cart_data
         for item in cart_data:
-            product = item['product_id']  # Get the product object
-            quantity = item['quantity']
-            total = product.price * quantity  # Calculate total for this product
+            product = item.get('product_id')  # Already a Product instance, thanks to PrimaryKeyRelatedField
 
-            # Add product to the order (many-to-many relationship)
-            order.products.add(product)  # Ensure `products` is a ManyToManyField on Order model
+            if not isinstance(product, Product):
+                raise ValidationError(f"Invalid product {product}. Expected a Product instance.")
 
-            # Accumulate total for the entire order
+            # No need to do get_object_or_404 again — DRF already fetched it
+            item['product'] = product  # Optional: if you need it elsewhere
+
+            quantity = item.get('quantity')
+            if quantity is None or quantity <= 0:
+                raise ValidationError(f"Invalid quantity {quantity}. It must be a positive integer.")
+
+            total = Decimal(product.price) * Decimal(quantity)
+
+            order.products.add(product)
+
+            serialized_item = {
+                'product_id': product.id,
+                'name': product.name,
+                'price': float(product.price),  # 👈 Convert to float
+                'quantity': quantity,
+                'total_price': float(total),  # 👈 Convert to float
+            }
+
+            serialized_cart_data.append(serialized_item)
             total_amount += total
 
-            # Serialize product data to save it in cart_data (ensure only necessary fields are included)
-            serialized_item = {
-                'product_id': product.id,  # Store only the product ID
-                'name': product.name,  # Store the product name
-                'price': product.price,  # Store the product price
-                'quantity': quantity,  # Store the quantity
-                'total_price': total  # Store the total price for this product
-            }
-            serialized_cart_data.append(serialized_item)
-
-        # Save the total amount to the order
-        order.total_amount = total_amount
-
-        # If `Order` model has a JSONField for cart_data, save the serialized cart data
-        order.cart_data = serialized_cart_data  # Assuming 'cart_data' is a JSONField
-        order.save()  # Save the order once, after all updates are done
+        # Save cart data and total to the order
+        order.cart_data = serialized_cart_data
+        order.total_amount = float(total_amount)  # 👈 Convert to float if total_amount is used in JSONField
+        order.save()
 
         return order
-
-    def update(self, instance, validated_data):
-        """Override to handle update logic (if needed)."""
-        cart_data = validated_data.pop('cart_data', None)  # If cart_data exists, pop it
-
-        # Update the instance fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        # If cart_data exists, process it
-        if cart_data is not None:
-            total_amount = 0  # Initialize total amount for the updated cart data
-
-            # Clear existing products to recalculate (if needed)
-            instance.products.clear()
-
-            # Calculate the new total amount from cart_data
-            for item in cart_data:
-                product_id = item['product_id']
-                quantity = item['quantity']
-
-                # Fetch the product instance by ID
-                try:
-                    product = Product.objects.get(id=product_id)
-                except Product.DoesNotExist:
-                    raise ValidationError(f"Product with ID {product_id} does not exist.")
-
-                total = product.price * quantity  # Calculate total for this product
-                total_amount += total
-
-                # Add the product to the order (many-to-many relationship)
-                instance.products.add(product)
-
-            # Update the total amount and save the cart data
-            instance.total_amount = total_amount
-            instance.save_cart_data(cart_data)
-
-        # Save the updated order instance
-        instance.save()
-
-        return instance

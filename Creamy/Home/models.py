@@ -14,6 +14,15 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def to_dict(self):
+        """Convert Product instance to a dictionary."""
+        return {
+            'product_id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'image': self.image.url if self.image else None,  # Ensure we get the image URL
+        }
+
 
 class Contact(models.Model):
     name = models.CharField(max_length=120)
@@ -53,81 +62,72 @@ ORDER_STATUS_CHOICES = [
 
 
 class Order(models.Model):
-    # Delivery Info
+    # Customer Info
     full_name = models.CharField(max_length=100, blank=True, null=True)
     email_address = models.EmailField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
 
-    # Country Choices
+    # Location
     country = models.CharField(max_length=100, choices=COUNTRY_CHOICES, blank=True, null=True)
-
-    # State Choices
     state = models.CharField(max_length=2, choices=STATE_CHOICES, blank=True, null=True)
-
     zip_code = models.CharField(max_length=20, blank=True, null=True)
 
-    # Miscellaneous
+    # Extra Info
     same_address = models.BooleanField(default=False)
     save_info = models.BooleanField(default=False)
     agreed_to_terms = models.BooleanField(default=False)
 
+    # Order Data
     total_amount = models.FloatField(default=0.00)
-
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # Order status choices
     order_status = models.CharField(max_length=10, choices=ORDER_STATUS_CHOICES, default='pending')
-
-    # Many-to-Many relationship with Product model
     products = models.ManyToManyField('Product', related_name='orders', blank=True)
-
-    # New cart_data field to store cart items as JSON
     cart_data = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"Order {self.id} - {self.full_name}"
 
-    def save_cart_data(self, cart_data):
-        """Ensure that cart data is saved in JSON format."""
+    def save_cart_data(self, cart_items):
+        """Convert Product instances to dict before saving to cart_data."""
         try:
-            # Ensure cart_data is a valid JSON serializable structure
-            self.cart_data = json.dumps(cart_data)  # Convert to a JSON string
+            serialized_cart = [product.to_dict() for product in cart_items]
+            self.cart_data = serialized_cart
         except (TypeError, ValueError) as e:
             raise ValidationError(f"Invalid cart data: {str(e)}")
 
-    # Override the save method to ensure custom validation is run
     def save(self, *args, **kwargs):
-        # Ensure cart_data is a valid structure before proceeding
+        # Basic validation
         if self.cart_data:
             if not isinstance(self.cart_data, list):
                 raise ValidationError("Cart data must be a list.")
             for item in self.cart_data:
                 if 'product_id' not in item or 'quantity' not in item:
-                    raise ValidationError("Each cart item must have 'product_id' and 'quantity'.")
+                    raise ValidationError("Each cart item must include 'product_id' and 'quantity'.")
 
-        # Recalculate total amount if cart_data has changed or if it's not already set
-        if self.cart_data:
+            # Update total amount
             self.total_amount = self.calculate_total_amount()
 
-        super(Order, self).save(*args, **kwargs)  # Proceed with saving the order
+        super(Order, self).save(*args, **kwargs)
 
-    # Method to dynamically calculate total amount based on cart
     def calculate_total_amount(self):
         total = 0
-        cart_data = self.cart_data if self.cart_data else []
+        cart_data = self.cart_data or []
 
-        # Fetch all products at once to avoid multiple database hits
-        product_ids = [item['product_id'].id for item in cart_data]  # Access the product's ID from the Product instance
+        # Normalize product IDs
+        product_ids = [
+            item['product_id'].id if hasattr(item['product_id'], 'id') else item['product_id']
+            for item in cart_data
+        ]
+
         products = Product.objects.filter(id__in=product_ids)
-
-        # Create a dictionary of products keyed by their id for faster lookup
         product_dict = {product.id: product for product in products}
 
-        # Calculate the total by matching product_id from the cart_data
         for item in cart_data:
-            product = product_dict.get(item['product_id'].id)  # Ensure you use the product's ID
+            pid = item['product_id'].id if hasattr(item['product_id'], 'id') else item['product_id']
+            quantity = item.get('quantity', 1)
+            product = product_dict.get(pid)
             if product:
-                total += product.price * item['quantity']  # Multiply price by quantity for total calculation
+                total += product.price * quantity
 
         return total
