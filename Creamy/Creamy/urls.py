@@ -44,6 +44,7 @@ urlpatterns = [
     path('api/orders/create/', view.create_order, name='create_order'),  # POST create order
     path('api/orders/update/<int:order_id>/', view.update_order, name='update_order'),  # PUT update order
     path('api/orders/delete/<int:order_id>/', view.delete_order, name='delete_order'),  # DELETE delete order
+    path('api/update_order_status/', view.update_order_status, name='update_order_status'),
     path('thankyou/', view.thankyou, name='thankyou'),
 ]
 

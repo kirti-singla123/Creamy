@@ -509,3 +509,29 @@ def delete_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+def update_order_status(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            order_id = data.get('order_id')
+            status = data.get('status')
+
+            # Ensure that both order_id and status are present
+            if not order_id or not status:
+                return JsonResponse({'error': 'Missing order_id or status'}, status=400)
+
+            # Assuming you have an Order model, update the order status
+            order = Order.objects.get(id=order_id)
+            order.status = status
+            order.save()
+
+            return JsonResponse({'message': 'Order status updated successfully'}, status=200)
+
+        except Exception as e:
+            # Log the error or return it in the response for debugging purposes
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)

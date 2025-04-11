@@ -429,7 +429,7 @@
                 console.log('PayPal payment approved:', data);  // Log approval data from PayPal
                 return actions.order.capture().then(function(details) {
                     alert('Congratulations! Your order is placed successfully, ' + details.payer.name.given_name);
-                    createOrder();  // Call createOrder function after PayPal payment
+                    createOrder(details.id);  // Call createOrder function after PayPal payment
                 });
             },
             onError: function(err) {
@@ -438,7 +438,7 @@
         }).render('#paypal-button-container');
 
         // Function to create the order after PayPal payment
-        function createOrder() {
+        function createOrder(paypalOrderId) {
             console.log('createOrder function called');  // Log when the function is called
 
             var cartDataFormatted = cart.map(item => {
@@ -514,7 +514,13 @@
                 processData: false,  // <--- Important
                 success: function(response) {
                     console.log('Order created successfully:', response);  // Log the successful order creation response
-                    updateOrderStatusToPaid(response.order_id);  // Update the order status to paid
+
+                    if (response.id) {
+                        updateOrderStatusToPaid(response.id);  // Pass the orderId from the create response
+                        window.location.href = '/thankyou/';  // Adjust the URL as per your route
+                    } else {
+                        console.error('Response does not contain order ID.');
+                    }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error creating order:', error);  // Log any error during order creation
@@ -526,6 +532,7 @@
             });
         }
 
+        // Function to update order status to "paid"
         function updateOrderStatusToPaid(orderId) {
             console.log('Updating order status to "paid" for order ID:', orderId);  // Log before updating the order status
             var csrf_token = document.querySelector('[name=CsrfViewMiddleware]').value;
