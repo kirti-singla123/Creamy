@@ -517,7 +517,7 @@
 
                     if (response.id) {
                         updateOrderStatusToPaid(response.id);  // Pass the orderId from the create response
-                        window.location.href = '/thankyou/';  // Adjust the URL as per your route
+                        window.location.href = '/thankyou/?order_id=' + orderId;
                     } else {
                         console.error('Response does not contain order ID.');
                     }
@@ -547,7 +547,7 @@
                 contentType: 'application/json',
                 success: function(response) {
                     console.log('Order status updated to "paid"');  // Log the success message
-                    window.location.href = '/thankyou/';  // Redirect after successful payment
+                    window.location.href = '/thankyou/?order_id=' + orderId;
                 },
                 error: function(error) {
                     console.error('Error updating order status:', error);  // Log any error during the order status update

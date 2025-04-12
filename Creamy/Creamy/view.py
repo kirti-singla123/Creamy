@@ -362,7 +362,7 @@ def checkout(request):
 
 
 def thankyou(request):
-    order_id = request.session.get('order_id')  # Get order_id from session
+    order_id = request.GET.get('order_id')  # Get order_id from session
 
     if not order_id:
         # Handle the case where order_id is not found in session
