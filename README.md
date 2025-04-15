@@ -70,9 +70,9 @@ With a smooth shopping experience, **Creamy** offers features like user login, a
 - **API:** Django REST Framework
 
 
-🚀 Live Demo
-You can check out the fully functional Creamy eCommerce website here: soon
+## 🚀 Live Demo
 
+You can check out the fully functional Creamy eCommerce website here: soon
 👉 Live Site
 
 No need to install anything locally — just click the link and explore the creamy goodness! 🍨
