@@ -79,7 +79,7 @@ No need to install anything locally — just click the link and explore the crea
 
 ## 📸 Screenshots
 
-![Home Page](screenshots/home.png)
+![Home Page](![image](https://github.com/user-attachments/assets/dcf39748-76dc-4766-96a9-4cd122c3c85c)
 ![Product Page](screenshots/products.png)
 ![Cart Page](screenshots/cart.png)
 ![Checkout Page](screenshots/checkout.png)
