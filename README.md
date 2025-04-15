@@ -58,3 +58,14 @@ With a smooth shopping experience, **Creamy** offers features like user login, a
 
 - **Easy-to-Use Interface:** 
   - Clean, modern design with a user-friendly interface that makes shopping and navigating the site a breeze for all users.
+    
+
+## 🛠️ Tech Stack
+
+- **Language:** Python
+- **Backend:** Django
+- **Frontend:** HTML, CSS, JavaScript, Bootstrap
+- **Database:** SQLite
+- **Payment Integration:** PayPal (Sandbox)
+- **API:** Django REST Framework
+
