@@ -88,5 +88,5 @@ No need to install anything locally — just click the link and explore the crea
 ## 🧑‍💻 Author
 
 - **Name:** Kirti Singla  
-- **GitHub:** [@your-username](https://github.com/your-username)
+- **GitHub:** [@kirti-singla123](https://github.com/kirti-singla123)
 - **LinkedIn:** [Your LinkedIn](https://www.linkedin.com/in/your-profile)
