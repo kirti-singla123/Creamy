@@ -69,3 +69,23 @@ With a smooth shopping experience, **Creamy** offers features like user login, a
 - **Payment Integration:** PayPal (Sandbox)
 - **API:** Django REST Framework
 
+
+🚀 Live Demo
+You can check out the fully functional Creamy eCommerce website here: soon
+
+👉 Live Site
+
+No need to install anything locally — just click the link and explore the creamy goodness! 🍨
+
+## 📸 Screenshots
+
+![Home Page](screenshots/home.png)
+![Product Page](screenshots/products.png)
+![Cart Page](screenshots/cart.png)
+![Checkout Page](screenshots/checkout.png)
+
+## 🧑‍💻 Author
+
+- **Name:** Your Name  
+- **GitHub:** [@your-username](https://github.com/your-username)
+- **LinkedIn:** [Your LinkedIn](https://www.linkedin.com/in/your-profile)
