@@ -39,7 +39,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "Home.apps.HomeConfig",
     "rest_framework",
+    "corsheaders",
+]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://creamy-com.onrender.com",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://creamy-com.onrender.com",
 ]
 
 # DRF settings
@@ -57,6 +65,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+
 ]
 
 ROOT_URLCONF = "Creamy.urls"
@@ -161,4 +171,4 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # This stores sessions i
 SESSION_COOKIE_NAME = 'sessionid'
 
 # (Optional) Expiration time for the session cookie in seconds (default is until the browser is closed)
-SESSION_COOKIE_AGE = 3600  # 1 hour
+SESSION_COOKIE_AGE = 3600

@@ -504,7 +504,7 @@
             console.log('CSRF Token:', csrf_token);  // Log the CSRF token
 
             $.ajax({
-                url: 'http://127.0.0.1:8000/api/orders/create/',
+                url: url: 'https://creamy-com.onrender.com/api/orders/create/',
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrf_token
@@ -538,7 +538,7 @@
             var csrf_token = document.querySelector('[name=CsrfViewMiddleware]').value;
 
             $.ajax({
-                url: '/api/update_order_status/',
+                url: url: 'https://creamy-com.onrender.com/api/update_order_status/',
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrf_token
