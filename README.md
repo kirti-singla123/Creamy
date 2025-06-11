@@ -89,4 +89,6 @@ No need to install anything locally — just click the link and explore the crea
 
 - **Name:** Kirti Singla  
 - **GitHub:** [@kirti-singla123](https://github.com/kirti-singla123)
-- **LinkedIn:** 
+- **LinkedIn:** www.linkedin.com/in/kirti-singla-web-dev
+
+
