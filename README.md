@@ -72,8 +72,7 @@ With a smooth shopping experience, **Creamy** offers features like user login, a
 
 ## 🚀 Live Demo
 
-You can check out the fully functional Creamy eCommerce website here: soon
-👉 Live Site
+You can check out the fully functional Creamy eCommerce website here 👉 Live Site: https://creamy-com.onrender.com/
 
 No need to install anything locally — just click the link and explore the creamy goodness! 🍨
 
