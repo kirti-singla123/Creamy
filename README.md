@@ -1,8 +1,8 @@
 # 🍦 Creamy – Ice Cream eCommerce Website
 
-**Creamy** is a user-friendly online store built with Django, made especially for ice cream lovers. From classic chocolate to fruity sorbets, it lets users easily browse, choose, and buy their favorite ice cream.
+**Creamy** is a Django-powered online ice cream shop where users can browse, choose, and purchase their favorite flavors — from classic chocolate to fruity sorbets.
 
-With a smooth shopping experience, **Creamy** offers features like user login, a shopping cart, and a responsive design built with Bootstrap, making the website easy to use on any device.
+With a smooth shopping experience, **Creamy** offers features like user login, a shopping cart, and a responsive Bootstrap-based design, making it easy to use on any device.
 
 
 ## 🚀 Features
