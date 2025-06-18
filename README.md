@@ -80,10 +80,18 @@ No need to install anything locally — just click the link and explore the crea
 
 **Home Page**  
 ![Home Page](https://github.com/user-attachments/assets/dcf39748-76dc-4766-96a9-4cd122c3c85c)
-![Product Page](![image](https://github.com/user-attachments/assets/932cb9a2-732c-4e75-883d-ca0afaa8b471)
-![Cart Page](![image](https://github.com/user-attachments/assets/ce1fdcb4-5437-4b5c-8dc2-8c3848c6e705)
-![Checkout Page](![image](https://github.com/user-attachments/assets/4734fc55-551e-445a-894f-383ef1d09a33)
-![Contact Us Page] (![image](https://github.com/user-attachments/assets/a5093bb9-bdd0-4b1c-8d33-e95b9d07d27e)
+
+**Product Page**  
+![Product Page](https://github.com/user-attachments/assets/932cb9a2-732c-4e75-883d-ca0afaa8b471)
+
+**Cart Page**  
+![Cart Page](https://github.com/user-attachments/assets/ce1fdcb4-5437-4b5c-8dc2-8c3848c6e705)
+
+**Checkout Page**  
+![Checkout Page](https://github.com/user-attachments/assets/4734fc55-551e-445a-894f-383ef1d09a33)
+
+**Contact Us Page**  
+![Contact Us Page](https://github.com/user-attachments/assets/a5093bb9-bdd0-4b1c-8d33-e95b9d07d27e)
 
 ## 🧑‍💻 Author
 
