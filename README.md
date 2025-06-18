@@ -78,7 +78,7 @@ No need to install anything locally — just click the link and explore the crea
 
 ## 📸 Screenshots
 
-![Home Page](![image](https://github.com/user-attachments/assets/dcf39748-76dc-4766-96a9-4cd122c3c85c)
+![Home Page](https://github.com/user-attachments/assets/dcf39748-76dc-4766-96a9-4cd122c3c85c)
 ![Product Page](![image](https://github.com/user-attachments/assets/932cb9a2-732c-4e75-883d-ca0afaa8b471)
 ![Cart Page](![image](https://github.com/user-attachments/assets/ce1fdcb4-5437-4b5c-8dc2-8c3848c6e705)
 ![Checkout Page](![image](https://github.com/user-attachments/assets/4734fc55-551e-445a-894f-383ef1d09a33)
